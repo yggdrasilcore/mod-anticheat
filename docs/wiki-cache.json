@@ -1,0 +1,1559 @@
+{
+ "__overview__@499c82ccef00:qwen3-5-4b": {
+  "hash": "499c82ccef00",
+  "doc": {
+   "summary": "The Anticheat module detects and reports cheating behaviors such as speed hacks, teleportation, and unfair movement by analyzing player motion data against game rules.",
+   "body": "# Anticheat Module\n\n## Overview\nThe **Anticheat** module is a C++ server-side component designed to identify and mitigate cheating in multiplayer games. It monitors player movement patterns, detects anomalies like excessive speed or teleportation, and alerts administrators through in-game messages or logs.\n\n## How It Works\nThe module operates by collecting movement data from players and comparing it against predefined thresholds and game logic. The flow involves:\n1. **Data Collection**: Movement information (position, speed, opcode) is captured via `AnticheatData::SetLastInformations()`.\n2. **Detection Logic**: Specific detection functions (e.g., `SpeedHackDetection`, `FlyHackDetection`) analyze this data against configurable rules.\n3. **Reporting**: If a violation is detected, the system increments a report counter and triggers alerts based on frequency thresholds.\n\n### Key Components\n| Component | Description |\n|-----------|-------------|\n| `AnticheatData` | Stores per-player movement history, report counts, and timestamps. |\n| `AnticheatMgr` | Manages detection logic, config access, and GM notifications. |\n| `MovementInfo` | Struct holding position, orientation, speed, and flags for each movement event. |\n\n## Configuration & Usage\nOperators can customize behavior via configuration keys. Below are key options:\n\n| Option Key | Default Value | Description |\n|------------|---------------|-------------|\n| `Anticheat.Enabled` | `true` | Enables/disables the entire module. |\n| `Anticheat.DetectSpeedHack` | `true` | Activates speed hack detection. |\n| `Anticheat.AlertFrequency.Speed` | `5` | Minimum reports before alerting GMs for speed hacks. |\n| `Anticheat.ReportInChatThreshold.Min.Speed` | `50` | Min reports to trigger chat notification. |\n| `Anticheat.WriteLog` | `true` | Logs violations to server files. |\n\n### Example: Enabling Speed Hack Detection\n```ini\n[Anticheat]\nEnabled = true\nDetectSpeedHack = true\nAlertFrequency.Speed = 5\nWriteLog = true\n```\n\n## Usage Example\n\n### Configuration File (`Anticheat.cfg`)\n```ini\n[Anticheat]\nEnabled = true\nDetectSpeedHack = true\nDetectFlyHack = true\nDetectTelePortHack = true\nAlertFrequency.Speed = 5\nAlertFrequency.Fly = 5\nReportInChatThreshold.Min.Speed = 50\nReportInChatThreshold.Max.Speed = 60\nWriteLog = true\n```\n\n### Injected Content File (`AnticheatData.cpp` Snippet)\n```cpp\nvoid AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo) {\n    if (!sConfigMgr->GetOption<bool>(\"Anticheat.DetectSpeedHack\", true)) return;\n    ObjectGuid key = player->GetGUID();\n    if (m_Players[key].GetLastMapId() != player->GetMapId()) return;\n    // ... detection logic continues\n}\n```\n\n## Developer Notes\n- Use `AnticheatData::SetLastInformations()` to update movement tracking.\n- Access report counts via `AnticheatData::GetTypeReports(type)`.\n- Configure alert frequencies per hack type using `GetAlertFrequencyConfigFromReportType()`.\n- Ensure thread safety when accessing shared state (`m_Players` uses mutex locks).\n\n> **Note**: Always test changes in a staging environment before deploying to production servers.",
+   "ai": true
+  },
+  "raw": "{\"summary\": \"The Anticheat module detects and reports cheating behaviors such as speed hacks, teleportation, and unfair movement by analyzing player motion data against game rules.\", \"body\": \"# Anticheat Module\\n\\n## Overview\\nThe **Anticheat** module is a C++ server-side component designed to identify and mitigate cheating in multiplayer games. It monitors player movement patterns, detects anomalies like excessive speed or teleportation, and alerts administrators through in-game messages or logs.\\n\\n## How It Works\\nThe module operates by collecting movement data from players and comparing it against predefined thresholds and game logic. The flow involves:\\n1. **Data Collection**: Movement information (position, speed, opcode) is captured via `AnticheatData::SetLastInformations()`.\\n2. **Detection Logic**: Specific detection functions (e.g., `SpeedHackDetection`, `FlyHackDetection`) analyze this data against configurable rules.\\n3. **Reporting**: If a violation is detected, the system increments a report counter and triggers alerts based on frequency thresholds.\\n\\n### Key Components\\n| Component | Description |\\n|-----------|-------------|\\n| `AnticheatData` | Stores per-player movement history, report counts, and timestamps. |\\n| `AnticheatMgr` | Manages detection logic, config access, and GM notifications. |\\n| `MovementInfo` | Struct holding position, orientation, speed, and flags for each movement event. |\\n\\n## Configuration & Usage\\nOperators can customize behavior via configuration keys. Below are key options:\\n\\n| Option Key | Default Value | Description |\\n|------------|---------------|-------------|\\n| `Anticheat.Enabled` | `true` | Enables/disables the entire module. |\\n| `Anticheat.DetectSpeedHack` | `true` | Activates speed hack detection. |\\n| `Anticheat.AlertFrequency.Speed` | `5` | Minimum reports before alerting GMs for speed hacks. |\\n| `Anticheat.ReportInChatThreshold.Min.Speed` | `50` | Min reports to trigger chat notification. |\\n| `Anticheat.WriteLog` | `true` | Logs violations to server files. |\\n\\n### Example: Enabling Speed Hack Detection\\n```ini\\n[Anticheat]\\nEnabled = true\\nDetectSpeedHack = true\\nAlertFrequency.Speed = 5\\nWriteLog = true\\n```\\n\\n## Usage Example\\n\\n### Configuration File (`Anticheat.cfg`)\\n```ini\\n[Anticheat]\\nEnabled = true\\nDetectSpeedHack = true\\nDetectFlyHack = true\\nDetectTelePortHack = true\\nAlertFrequency.Speed = 5\\nAlertFrequency.Fly = 5\\nReportInChatThreshold.Min.Speed = 50\\nReportInChatThreshold.Max.Speed = 60\\nWriteLog = true\\n```\\n\\n### Injected Content File (`AnticheatData.cpp` Snippet)\\n```cpp\\nvoid AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo) {\\n    if (!sConfigMgr->GetOption<bool>(\\\"Anticheat.DetectSpeedHack\\\", true)) return;\\n    ObjectGuid key = player->GetGUID();\\n    if (m_Players[key].GetLastMapId() != player->GetMapId()) return;\\n    // ... detection logic continues\\n}\\n```\\n\\n## Developer Notes\\n- Use `AnticheatData::SetLastInformations()` to update movement tracking.\\n- Access report counts via `AnticheatData::GetTypeReports(type)`.\\n- Configure alert frequencies per hack type using `GetAlertFrequencyConfigFromReportType()`.\\n- Ensure thread safety when accessing shared state (`m_Players` uses mutex locks).\\n\\n> **Note**: Always test changes in a staging environment before deploying to production servers.\"}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::AnticheatData@fa49be33:qwen3-5-4b": {
+  "hash": "79a7de6e66b3",
+  "doc": {
+   "summary": "Constructs an AnticheatData object by initializing internal counters, timers, and flags to their default values.",
+   "overview": "This constructor initializes the internal state of the AnticheatData class, setting up data structures required for tracking game anomalies. It resets report counters, clears temporary report arrays, and establishes initial flags such as hasDailyReport and justUsedMovementSpell to false. The initialization also sets floating-point accumulators like average and lastSpeedRate to zero.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Constructs an AnticheatData object by initializing internal counters, timers, and flags to their default values.\",\n  \"overview\": \"This constructor initializes the internal state of the AnticheatData class, setting up data structures required for tracking game anomalies. It resets report counters, clears temporary report arrays, and establishes initial flags such as hasDailyReport and justUsedMovementSpell to false. The initialization also sets floating-point accumulators like average and lastSpeedRate to zero.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::~AnticheatData@27602827:qwen3-5-4b": {
+  "hash": "2e84cbbf277a",
+  "doc": {
+   "summary": "The destructor for the AnticheatData class cleans up dynamically allocated resources.",
+   "overview": "This function serves as the destructor for the AnticheatData class, ensuring that any memory or resources acquired during the object's lifetime are properly released. Although the implementation is currently empty, it provides a standard entry point for future cleanup logic related to anti-cheat data structures. It does not perform any immediate actions other than preparing the object for deallocation.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"The destructor for the AnticheatData class cleans up dynamically allocated resources.\",\n  \"overview\": \"This function serves as the destructor for the AnticheatData class, ensuring that any memory or resources acquired during the object's lifetime are properly released. Although the implementation is currently empty, it provides a standard entry point for future cleanup logic related to anti-cheat data structures. It does not perform any immediate actions other than preparing the object for deallocation.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetLastInformations@ed7ad4ef:qwen3-5-4b": {
+  "hash": "1b12d3fb74b2",
+  "doc": {
+   "summary": "Stores the last known movement data, opcode, map ID, and speed rate for anti-cheat tracking.",
+   "overview": "This function encapsulates four internal setter calls to record specific movement metrics. It is primarily used by the game server to update its internal state regarding player behavior patterns. By centralizing these updates, it ensures consistent access to historical movement data for detection algorithms.",
+   "params": [
+    {
+     "name": "movementInfo",
+     "desc": "A MovementInfo struct containing details about the player's recent movement."
+    },
+    {
+     "name": "opcode",
+     "desc": "The operation code associated with the movement event, typically a uint32 value."
+    },
+    {
+     "name": "mapId",
+     "desc": "The unique identifier of the map where the movement occurred, also a uint32 value."
+    },
+    {
+     "name": "speedRate",
+     "desc": "A float representing the speed rate observed during the movement."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Internal state modification; no I/O, network calls, or global locks.",
+   "notes": "Callers should ensure thread safety if this function is invoked concurrently from multiple game threads. Edge cases include invalid map IDs or zero speed rates, which are handled by the underlying setter functions.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Stores the last known movement data, opcode, map ID, and speed rate for anti-cheat tracking.\",\n  \"overview\": \"This function encapsulates four internal setter calls to record specific movement metrics. It is primarily used by the game server to update its internal state regarding player behavior patterns. By centralizing these updates, it ensures consistent access to historical movement data for detection algorithms.\",\n  \"params\": [\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"A MovementInfo struct containing details about the player's recent movement.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The operation code associated with the movement event, typically a uint32 value.\"\n    },\n    {\n      \"name\": \"mapId\",\n      \"desc\": \"The unique identifier of the map where the movement occurred, also a uint32 value.\"\n    },\n    {\n      \"name\": \"speedRate\",\n      \"desc\": \"A float representing the speed rate observed during the movement.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Internal state modification; no I/O, network calls, or global locks.\",\n  \"notes\": \"Callers should ensure thread safety if this function is invoked concurrently from multiple game threads. Edge cases include invalid map IDs or zero speed rates, which are handled by the underlying setter functions.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetDailyReportState@85f2ac2f:qwen3-5-4b": {
+  "hash": "c32a278f9078",
+  "doc": {
+   "summary": "Sets the daily report flag in the anticheat data structure to control whether a daily report is generated.",
+   "overview": "This function updates the internal state of the AnticheatData module by assigning the provided boolean value to the hasDailyReport member variable. It serves as a configuration setter that determines if the system should proceed with generating or sending a daily report based on the current game session status. The change is immediate and affects subsequent logic that checks for report requirements.",
+   "params": [
+    {
+     "name": "b",
+     "desc": "A boolean value indicating whether the daily report state should be set to true or false."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers must ensure this function is only invoked when appropriate game conditions are met to avoid generating unnecessary reports. Edge cases include passing invalid types, though the parameter is strictly boolean; no global state or I/O operations occur.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the daily report flag in the anticheat data structure to control whether a daily report is generated.\",\n  \"overview\": \"This function updates the internal state of the AnticheatData module by assigning the provided boolean value to the hasDailyReport member variable. It serves as a configuration setter that determines if the system should proceed with generating or sending a daily report based on the current game session status. The change is immediate and affects subsequent logic that checks for report requirements.\",\n  \"params\": [\n    {\n      \"name\": \"b\",\n      \"desc\": \"A boolean value indicating whether the daily report state should be set to true or false.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers must ensure this function is only invoked when appropriate game conditions are met to avoid generating unnecessary reports. Edge cases include passing invalid types, though the parameter is strictly boolean; no global state or I/O operations occur.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetDailyReportState@413c2efe:qwen3-5-4b": {
+  "hash": "6d10258dbbc1",
+  "doc": {
+   "summary": "Returns the current daily report status based on the internal state flag.",
+   "overview": "This function retrieves the boolean value of the daily report state from the global configuration. It serves as a simple accessor for the `hasDailyReport` flag, which tracks whether the daily reporting mechanism has been initialized or triggered. The implementation does not perform any additional logic beyond returning the stored state.",
+   "params": [],
+   "returns": "bool",
+   "side_effects": "None",
+   "notes": "Callers should ensure `hasDailyReport` is properly set before relying on this value for decision-making.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the current daily report status based on the internal state flag.\",\n  \"overview\": \"This function retrieves the boolean value of the daily report state from the global configuration. It serves as a simple accessor for the `hasDailyReport` flag, which tracks whether the daily reporting mechanism has been initialized or triggered. The implementation does not perform any additional logic beyond returning the stored state.\",\n  \"params\": [],\n  \"returns\": \"bool\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure `hasDailyReport` is properly set before relying on this value for decision-making.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetLastOpcode@965a978c:qwen3-5-4b": {
+  "hash": "ebe64940271b",
+  "doc": {
+   "summary": "Stores the most recent game server opcode in a member variable for potential future use.",
+   "overview": "This function updates the internal state of the AnticheatData module by assigning the provided opcode to the lastOpcode field. It serves as a simple setter that prepares data for logging or analysis, though it currently does not perform any complex validation or side effects.",
+   "params": [
+    {
+     "name": "opcode",
+     "desc": "The numeric identifier of the game action or command being executed."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers should ensure the opcode is valid before invoking this function to prevent storing invalid state. This function is primarily intended for internal tracking rather than direct client interaction.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Stores the most recent game server opcode in a member variable for potential future use.\",\n  \"overview\": \"This function updates the internal state of the AnticheatData module by assigning the provided opcode to the lastOpcode field. It serves as a simple setter that prepares data for logging or analysis, though it currently does not perform any complex validation or side effects.\",\n  \"params\": [\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The numeric identifier of the game action or command being executed.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the opcode is valid before invoking this function to prevent storing invalid state. This function is primarily intended for internal tracking rather than direct client interaction.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetPosition@df7aae36:qwen3-5-4b": {
+  "hash": "753b2e1e9fa2",
+  "doc": {
+   "summary": "Stores the player's current position and movement speed in the global anti-cheat data structure.",
+   "overview": "This function updates the last known position of a client by recording its coordinates, vertical offset, and the map ID it is currently on. It directly modifies the internal state used to detect suspicious movement patterns and ensures the position history is synchronized with the active game world.",
+   "params": [
+    {
+     "name": "x",
+     "desc": "The horizontal coordinate of the player's position."
+    },
+    {
+     "name": "y",
+     "desc": "The vertical coordinate of the player's position."
+    },
+    {
+     "name": "z",
+     "desc": "The depth coordinate of the player's position."
+    },
+    {
+     "name": "o",
+     "desc": "The vertical offset or height adjustment value for the position."
+    },
+    {
+     "name": "mapId",
+     "desc": "The unique identifier of the current map the player is located in."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Global state modification via lastMovementInfo and SetLastMapId; no I/O or network operations.",
+   "notes": "Must be called with valid coordinates to prevent data corruption; typically invoked by the game loop upon receiving client position updates.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Stores the player's current position and movement speed in the global anti-cheat data structure.\",\n  \"overview\": \"This function updates the last known position of a client by recording its coordinates, vertical offset, and the map ID it is currently on. It directly modifies the internal state used to detect suspicious movement patterns and ensures the position history is synchronized with the active game world.\",\n  \"params\": [\n    {\n      \"name\": \"x\",\n      \"desc\": \"The horizontal coordinate of the player's position.\"\n    },\n    {\n      \"name\": \"y\",\n      \"desc\": \"The vertical coordinate of the player's position.\"\n    },\n    {\n      \"name\": \"z\",\n      \"desc\": \"The depth coordinate of the player's position.\"\n    },\n    {\n      \"name\": \"o\",\n      \"desc\": \"The vertical offset or height adjustment value for the position.\"\n    },\n    {\n      \"name\": \"mapId\",\n      \"desc\": \"The unique identifier of the current map the player is located in.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Global state modification via lastMovementInfo and SetLastMapId; no I/O or network operations.\",\n  \"notes\": \"Must be called with valid coordinates to prevent data corruption; typically invoked by the game loop upon receiving client position updates.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetLastOpcode@5223e3f2:qwen3-5-4b": {
+  "hash": "aa8a22c2857e",
+  "doc": {
+   "summary": "Returns the most recently processed opcode from the anticheat system.",
+   "overview": "This function retrieves the last opcode that was successfully parsed and stored in the global state. It is primarily used for debugging or logging purposes to inspect the current command sequence without modifying the internal data structures.",
+   "params": [],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "The caller must ensure that an opcode has been processed prior to calling this function, as it will return a default value if no opcodes have been recorded yet.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the most recently processed opcode from the anticheat system.\",\n  \"overview\": \"This function retrieves the last opcode that was successfully parsed and stored in the global state. It is primarily used for debugging or logging purposes to inspect the current command sequence without modifying the internal data structures.\",\n  \"params\": [],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"The caller must ensure that an opcode has been processed prior to calling this function, as it will return a default value if no opcodes have been recorded yet.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetLastMovementInfo@9521df37:qwen3-5-4b": {
+  "hash": "a667ffa9ff51",
+  "doc": {
+   "summary": "Returns a reference to the most recent movement information stored in the global state.",
+   "overview": "This function provides direct access to the `lastMovementInfo` member variable, which holds the latest movement data recorded by the anti-cheat system. It is intended for use when immediate access to the current movement context is required without triggering additional side effects or locking mechanisms. Callers should ensure they do not modify the returned reference directly, as it points to internal state.",
+   "params": [],
+   "returns": "const MovementInfo&",
+   "side_effects": "None",
+   "notes": "The function returns a reference to global state; callers must be aware that modifications to the returned object will affect the shared data.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns a reference to the most recent movement information stored in the global state.\",\n  \"overview\": \"This function provides direct access to the `lastMovementInfo` member variable, which holds the latest movement data recorded by the anti-cheat system. It is intended for use when immediate access to the current movement context is required without triggering additional side effects or locking mechanisms. Callers should ensure they do not modify the returned reference directly, as it points to internal state.\",\n  \"params\": [],\n  \"returns\": \"const MovementInfo&\",\n  \"side_effects\": \"None\",\n  \"notes\": \"The function returns a reference to global state; callers must be aware that modifications to the returned object will affect the shared data.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetLastMovementInfo@6f85ef81:qwen3-5-4b": {
+  "hash": "c981bef25f63",
+  "doc": {
+   "summary": "Stores the provided MovementInfo object into the module's internal state for tracking player movement history.",
+   "overview": "This function updates the last recorded movement data within the anticheat system by assigning the passed reference to an internal member variable. It serves as a direct setter that ensures the most recent movement information is available for subsequent validation checks or logging operations. The operation is atomic and does not involve any external dependencies.",
+   "params": [
+    {
+     "name": "moveInfo",
+     "desc": "A reference to a MovementInfo object containing details about the player's recent movement, such as position, velocity, or trajectory."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers must ensure moveInfo is valid before passing it. The function does not perform any validation on the input data.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Stores the provided MovementInfo object into the module's internal state for tracking player movement history.\",\n  \"overview\": \"This function updates the last recorded movement data within the anticheat system by assigning the passed reference to an internal member variable. It serves as a direct setter that ensures the most recent movement information is available for subsequent validation checks or logging operations. The operation is atomic and does not involve any external dependencies.\",\n  \"params\": [\n    {\n      \"name\": \"moveInfo\",\n      \"desc\": \"A reference to a MovementInfo object containing details about the player's recent movement, such as position, velocity, or trajectory.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers must ensure moveInfo is valid before passing it. The function does not perform any validation on the input data.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetTotalReports@025e922e:qwen3-5-4b": {
+  "hash": "69f9fb19faef",
+  "doc": {
+   "summary": "Returns the current count of total reports submitted by players.",
+   "overview": "This function provides read-only access to the global counter tracking the number of anticheat reports received since the server started. It is typically used by administrators or debugging tools to monitor the volume of reported incidents in real-time without modifying the internal state.",
+   "params": [],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "The value returned reflects the cumulative total since server initialization and does not reset unless the server is restarted or the counter is manually cleared via other means.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the current count of total reports submitted by players.\",\n  \"overview\": \"This function provides read-only access to the global counter tracking the number of anticheat reports received since the server started. It is typically used by administrators or debugging tools to monitor the volume of reported incidents in real-time without modifying the internal state.\",\n  \"params\": [],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"The value returned reflects the cumulative total since server initialization and does not reset unless the server is restarted or the counter is manually cleared via other means.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetTotalReports@e3573f6c:qwen3-5-4b": {
+  "hash": "0928a564ef9e",
+  "doc": {
+   "summary": "Sets the global counter for the total number of reports processed by the anti-cheat system.",
+   "overview": "This function updates the internal state variable `totalReports` with a new value provided as an argument. It serves as the primary interface for administrators or external systems to report the cumulative count of detected violations. The update is immediate and affects any subsequent queries for the total report count within the current server session.",
+   "params": [
+    {
+     "name": "_totalReports",
+     "desc": "The new value to assign to the total reports counter."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers should ensure `_totalReports` is a valid `uint32` value. This function does not perform any I/O, network operations, or acquire locks; it is purely a state mutation.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the global counter for the total number of reports processed by the anti-cheat system.\",\n  \"overview\": \"This function updates the internal state variable `totalReports` with a new value provided as an argument. It serves as the primary interface for administrators or external systems to report the cumulative count of detected violations. The update is immediate and affects any subsequent queries for the total report count within the current server session.\",\n  \"params\": [\n    {\n      \"name\": \"_totalReports\",\n      \"desc\": \"The new value to assign to the total reports counter.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure `_totalReports` is a valid `uint32` value. This function does not perform any I/O, network operations, or acquire locks; it is purely a state mutation.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetTypeReports@9356bca6:qwen3-5-4b": {
+  "hash": "fe9438994460",
+  "doc": {
+   "summary": "Sets the report count for a specific anticheat type in the global state.",
+   "overview": "This function updates the internal tracking of how many reports have been received for a given anticheat type. It directly modifies the global `typeReports` map, which is used to monitor and potentially trigger actions based on report thresholds.",
+   "params": [
+    {
+     "name": "type",
+     "desc": "The identifier of the anticheat type (e.g., 'aimbot', 'wallhack')."
+    },
+    {
+     "name": "amount",
+     "desc": "The number of reports to record for the specified type."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Global state modification",
+   "notes": "Callers should ensure `type` is within valid bounds before calling. The function does not perform any validation on the input values.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the report count for a specific anticheat type in the global state.\",\n  \"overview\": \"This function updates the internal tracking of how many reports have been received for a given anticheat type. It directly modifies the global `typeReports` map, which is used to monitor and potentially trigger actions based on report thresholds.\",\n  \"params\": [\n    {\n      \"name\": \"type\",\n      \"desc\": \"The identifier of the anticheat type (e.g., 'aimbot', 'wallhack').\"\n    },\n    {\n      \"name\": \"amount\",\n      \"desc\": \"The number of reports to record for the specified type.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Global state modification\",\n  \"notes\": \"Callers should ensure `type` is within valid bounds before calling. The function does not perform any validation on the input values.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetTypeReports@842a4bed:qwen3-5-4b": {
+  "hash": "c233d2fb1707",
+  "doc": {
+   "summary": "Retrieves the count of reports for a specific anticheat type from the global report registry.",
+   "overview": "This function acts as a simple accessor to query the number of detected reports associated with a given anticheat type. It performs an O(1) lookup into the static `typeReports` array, which is maintained globally by the AnticheatData module. The implementation assumes that the provided `type` argument is within the valid bounds of the array.",
+   "params": [
+    {
+     "name": "type",
+     "desc": "The specific anticheat type identifier to query."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Callers must ensure the `type` argument is valid before calling; passing an out-of-bounds index will result in undefined behavior. This function does not modify any global state.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the count of reports for a specific anticheat type from the global report registry.\",\n  \"overview\": \"This function acts as a simple accessor to query the number of detected reports associated with a given anticheat type. It performs an O(1) lookup into the static `typeReports` array, which is maintained globally by the AnticheatData module. The implementation assumes that the provided `type` argument is within the valid bounds of the array.\",\n  \"params\": [\n    {\n      \"name\": \"type\",\n      \"desc\": \"The specific anticheat type identifier to query.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers must ensure the `type` argument is valid before calling; passing an out-of-bounds index will result in undefined behavior. This function does not modify any global state.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetAverage@bdb271f2:qwen3-5-4b": {
+  "hash": "7b17a4e06109",
+  "doc": {
+   "summary": "Returns the current average value stored in the anticheat data structure.",
+   "overview": "This function retrieves the precomputed average metric from the internal state of the AnticheatData object. It is typically called by higher-level modules to display statistics or make decisions based on the aggregated performance data without requiring direct access to the raw input stream.",
+   "params": [],
+   "returns": "float",
+   "side_effects": "None",
+   "notes": "The caller must ensure that the AnticheatData instance has been properly initialized and updated with new data before invoking this function, as the returned value will be undefined if no inputs have been processed yet.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the current average value stored in the anticheat data structure.\",\n  \"overview\": \"This function retrieves the precomputed average metric from the internal state of the AnticheatData object. It is typically called by higher-level modules to display statistics or make decisions based on the aggregated performance data without requiring direct access to the raw input stream.\",\n  \"params\": [],\n  \"returns\": \"float\",\n  \"side_effects\": \"None\",\n  \"notes\": \"The caller must ensure that the AnticheatData instance has been properly initialized and updated with new data before invoking this function, as the returned value will be undefined if no inputs have been processed yet.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetAverage@2b3e8f2c:qwen3-5-4b": {
+  "hash": "ae7aff1b67e6",
+  "doc": {
+   "summary": "Sets the internal average value used for anti-cheat calculations.",
+   "overview": "This function updates the stored average metric within the AnticheatData module, which is likely utilized to track player behavior or performance over time. The implementation directly assigns the provided float value to a private member variable, bypassing any validation logic that might exist elsewhere in the system. Callers should ensure the value passed is appropriate for the current context to avoid skewing subsequent statistical analyses.",
+   "params": [
+    {
+     "name": "_average",
+     "desc": "The new average value to be assigned."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the internal average value used for anti-cheat calculations.\",\n  \"overview\": \"This function updates the stored average metric within the AnticheatData module, which is likely utilized to track player behavior or performance over time. The implementation directly assigns the provided float value to a private member variable, bypassing any validation logic that might exist elsewhere in the system. Callers should ensure the value passed is appropriate for the current context to avoid skewing subsequent statistical analyses.\",\n  \"params\": [\n    {\n      \"name\": \"_average\",\n      \"desc\": \"The new average value to be assigned.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetCreationTime@40eada59:qwen3-5-4b": {
+  "hash": "482d11f144b1",
+  "doc": {
+   "summary": "Returns the creation time of the anticheat data structure as a 32-bit unsigned integer.",
+   "overview": "This function retrieves the timestamp when the AnticheatData object was instantiated. It provides direct access to the internal creationTime member variable without exposing the object itself, ensuring encapsulation while allowing external modules to determine the age or lifecycle start of the data structure.",
+   "params": [],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Callers should verify that the AnticheatData instance is fully initialized before calling this function, as accessing creationTime on an uninitialized object may yield undefined behavior.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the creation time of the anticheat data structure as a 32-bit unsigned integer.\",\n  \"overview\": \"This function retrieves the timestamp when the AnticheatData object was instantiated. It provides direct access to the internal creationTime member variable without exposing the object itself, ensuring encapsulation while allowing external modules to determine the age or lifecycle start of the data structure.\",\n  \"params\": [],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should verify that the AnticheatData instance is fully initialized before calling this function, as accessing creationTime on an uninitialized object may yield undefined behavior.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetCreationTime@55fe213d:qwen3-5-4b": {
+  "hash": "c384905056a8",
+  "doc": {
+   "summary": "Sets the creation time of the anticheat data structure to a specified timestamp.",
+   "overview": "This function updates the internal creation time field within the AnticheatData object, which is used to track when the data was initialized. It serves as a configuration setter that allows external modules to define the initial timestamp for integrity checks or session tracking. The operation is direct and does not involve any complex logic beyond simple assignment.",
+   "params": [
+    {
+     "name": "_creationTime",
+     "desc": "The timestamp value (in seconds since epoch) to assign to the creation time."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers should ensure _creationTime is valid before invoking this function. This setter does not validate input ranges, so callers are responsible for preventing invalid timestamps.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the creation time of the anticheat data structure to a specified timestamp.\",\n  \"overview\": \"This function updates the internal creation time field within the AnticheatData object, which is used to track when the data was initialized. It serves as a configuration setter that allows external modules to define the initial timestamp for integrity checks or session tracking. The operation is direct and does not involve any complex logic beyond simple assignment.\",\n  \"params\": [\n    {\n      \"name\": \"_creationTime\",\n      \"desc\": \"The timestamp value (in seconds since epoch) to assign to the creation time.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure _creationTime is valid before invoking this function. This setter does not validate input ranges, so callers are responsible for preventing invalid timestamps.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetTempReports@0cf64018:qwen3-5-4b": {
+  "hash": "d4607690699b",
+  "doc": {
+   "summary": "Sets the temporary report count for a specific anticheat type.",
+   "overview": "This function updates the internal storage of temporary reports associated with a given anticheat type. It is typically called by game logic to record pending reports before they are processed or cleared, ensuring data consistency within the server's anticheat module.",
+   "params": [
+    {
+     "name": "amount",
+     "desc": "The number of temporary reports to store for the specified type."
+    },
+    {
+     "name": "type",
+     "desc": "The identifier for the specific anticheat report category."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers must ensure the 'type' index is valid before invoking this function to prevent out-of-bounds access.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the temporary report count for a specific anticheat type.\",\n  \"overview\": \"This function updates the internal storage of temporary reports associated with a given anticheat type. It is typically called by game logic to record pending reports before they are processed or cleared, ensuring data consistency within the server's anticheat module.\",\n  \"params\": [\n    {\n      \"name\": \"amount\",\n      \"desc\": \"The number of temporary reports to store for the specified type.\"\n    },\n    {\n      \"name\": \"type\",\n      \"desc\": \"The identifier for the specific anticheat report category.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers must ensure the 'type' index is valid before invoking this function to prevent out-of-bounds access.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetTempReports@5c0b4399:qwen3-5-4b": {
+  "hash": "aba678a985c0",
+  "doc": {
+   "summary": "Retrieves the count of temporary reports associated with a specific report type from the global anti-cheat data structure.",
+   "overview": "This function accesses the global `tempReports` map to fetch the number of pending temporary reports for a given type. It is typically called by the game server's reporting system when an administrator or player needs to check the status of queued reports before processing them. The operation assumes that the report has already been added to the queue and is currently in a temporary state.",
+   "params": [
+    {
+     "name": "type",
+     "desc": "The specific type of report (e.g., exploit, hack, or other) for which the temporary report count is requested."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Callers should ensure the report exists in the queue before calling this function to avoid retrieving zero counts. Edge cases include accessing an invalid type index if the map does not support it, though the implementation suggests direct array access.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the count of temporary reports associated with a specific report type from the global anti-cheat data structure.\",\n  \"overview\": \"This function accesses the global `tempReports` map to fetch the number of pending temporary reports for a given type. It is typically called by the game server's reporting system when an administrator or player needs to check the status of queued reports before processing them. The operation assumes that the report has already been added to the queue and is currently in a temporary state.\",\n  \"params\": [\n    {\n      \"name\": \"type\",\n      \"desc\": \"The specific type of report (e.g., exploit, hack, or other) for which the temporary report count is requested.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the report exists in the queue before calling this function to avoid retrieving zero counts. Edge cases include accessing an invalid type index if the map does not support it, though the implementation suggests direct array access.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::SetTempReportsTimer@595bf786:qwen3-5-4b": {
+  "hash": "44bc6ebe98af",
+  "doc": {
+   "summary": "Sets the temporary report timer value for a specific anticheat type.",
+   "overview": "This function updates the internal storage for the temporary reports timer associated with a given anticheat type. It is typically called by higher-level modules to schedule or adjust the expiration of temporary anti-cheat reports based on game time.",
+   "params": [
+    {
+     "name": "time",
+     "desc": "The timestamp value to store for the temporary report timer."
+    },
+    {
+     "name": "type",
+     "desc": "The identifier of the anticheat type (e.g., aimbot, wallhack) for which the timer is being set."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Callers should ensure the 'type' index is valid before invoking this function to avoid undefined behavior. This function does not perform any I/O or network operations.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Sets the temporary report timer value for a specific anticheat type.\",\n  \"overview\": \"This function updates the internal storage for the temporary reports timer associated with a given anticheat type. It is typically called by higher-level modules to schedule or adjust the expiration of temporary anti-cheat reports based on game time.\",\n  \"params\": [\n    {\n      \"name\": \"time\",\n      \"desc\": \"The timestamp value to store for the temporary report timer.\"\n    },\n    {\n      \"name\": \"type\",\n      \"desc\": \"The identifier of the anticheat type (e.g., aimbot, wallhack) for which the timer is being set.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the 'type' index is valid before invoking this function to avoid undefined behavior. This function does not perform any I/O or network operations.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.cpp::GetTempReportsTimer@93b3eb46:qwen3-5-4b": {
+  "hash": "5d310ec3dafe",
+  "doc": {
+   "summary": "Retrieves the temporary report timer value associated with a specific anticheat type.",
+   "overview": "This function returns the current timer value stored in the global `tempReportsTimer` array for the provided anticheat type. It is typically called by the game server to determine when temporary reports expire or reset based on the configured anticheat system.",
+   "params": [
+    {
+     "name": "type",
+     "desc": "The identifier of the anticheat type (e.g., ESP, Aimbot) whose timer value is being queried."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Caller must ensure `type` is within valid bounds to avoid undefined behavior. Used in the report expiration logic.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the temporary report timer value associated with a specific anticheat type.\",\n  \"overview\": \"This function returns the current timer value stored in the global `tempReportsTimer` array for the provided anticheat type. It is typically called by the game server to determine when temporary reports expire or reset based on the configured anticheat system.\",\n  \"params\": [\n    {\n      \"name\": \"type\",\n      \"desc\": \"The identifier of the anticheat type (e.g., ESP, Aimbot) whose timer value is being queried.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Caller must ensure `type` is within valid bounds to avoid undefined behavior. Used in the report expiration logic.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatData.h::AnticheatData@496b2700:qwen3-5-4b": {
+  "hash": "5aed2b625b91",
+  "doc": {
+   "summary": "The AnticheatData class encapsulates anti-cheat reporting metrics, movement history, and temporal tracking for game server integrity monitoring.",
+   "overview": "This class serves as the central repository for anti-cheat data collected during gameplay, storing specific movement information, report counts, and timestamps. It provides getter and setter methods to manage various statistics such as total reports, average values, and temporary report timers while maintaining a record of the last known player movement details. The design supports both direct state modification and read-only access patterns to facilitate real-time analysis and logging.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "The class relies on internal arrays (typeReports, tempReports) sized by MAX_REPORT_TYPES which should be defined elsewhere; callers must ensure thread safety when accessing shared state if used in a multi-threaded environment.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"The AnticheatData class encapsulates anti-cheat reporting metrics, movement history, and temporal tracking for game server integrity monitoring.\",\n  \"overview\": \"This class serves as the central repository for anti-cheat data collected during gameplay, storing specific movement information, report counts, and timestamps. It provides getter and setter methods to manage various statistics such as total reports, average values, and temporary report timers while maintaining a record of the last known player movement details. The design supports both direct state modification and read-only access patterns to facilitate real-time analysis and logging.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"The class relies on internal arrays (typeReports, tempReports) sized by MAX_REPORT_TYPES which should be defined elsewhere; callers must ensure thread safety when accessing shared state if used in a multi-threaded environment.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AnticheatMgr@a797a944:qwen3-5-4b": {
+  "hash": "cd6a8ca92179",
+  "doc": {
+   "summary": "The AnticheatMgr() constructor initializes a mapping of server-to-client messages for various movement and speed changes.",
+   "overview": "This function sets up the _opackorders data structure within the AnticheatMgr class, which is essential for handling anti-cheat logic related to player movement. It defines pairs of server-side message IDs and their corresponding client acknowledgment messages for actions such as forcing speed changes, altering turn rates, and modifying collision heights. This initialization occurs at the start of the class lifecycle, ensuring that all necessary message mappings are available before any game logic executes.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"The AnticheatMgr() constructor initializes a mapping of server-to-client messages for various movement and speed changes.\",\n  \"overview\": \"This function sets up the _opackorders data structure within the AnticheatMgr class, which is essential for handling anti-cheat logic related to player movement. It defines pairs of server-side message IDs and their corresponding client acknowledgment messages for actions such as forcing speed changes, altering turn rates, and modifying collision heights. This initialization occurs at the start of the class lifecycle, ensuring that all necessary message mappings are available before any game logic executes.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::~AnticheatMgr@f693c0e3:qwen3-5-4b": {
+  "hash": "cb9474b59740",
+  "doc": {
+   "summary": "Destroys the Anticheat manager instance by clearing its player list.",
+   "overview": "This destructor function ensures proper cleanup of resources managed by the Anticheat system. It specifically iterates through and removes all stored players from memory to prevent leaks when the server shuts down or the module is unloaded. This operation is critical for maintaining memory integrity during application termination.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Memory deallocation (clears internal player list)",
+   "notes": "Called automatically by the C++ runtime when an AnticheatMgr object goes out of scope; no manual invocation required.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Destroys the Anticheat manager instance by clearing its player list.\",\n  \"overview\": \"This destructor function ensures proper cleanup of resources managed by the Anticheat system. It specifically iterates through and removes all stored players from memory to prevent leaks when the server shuts down or the module is unloaded. This operation is critical for maintaining memory integrity during application termination.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Memory deallocation (clears internal player list)\",\n  \"notes\": \"Called automatically by the C++ runtime when an AnticheatMgr object goes out of scope; no manual invocation required.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::DoToAllGMs@eea13baf:qwen3-5-4b": {
+  "hash": "a2939e4f00ac",
+  "doc": {
+   "summary": "Executes a provided function on all GM players currently in the world who do not have elevated security permissions.",
+   "overview": "This function iterates through the global session map to identify all players present in the game world. It specifically targets Game Masters (GMs) by checking if their account security level is below that of an administrator, ensuring the action is only performed on authorized personnel without excessive privileges. The provided callback function is then invoked for each qualifying player.",
+   "params": [
+    {
+     "name": "exec",
+     "desc": "A std::function accepting a Player* pointer as its argument, representing the operation to perform on each GM."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "The function relies on global state from sWorldSessionMgr and AccountMgr. It assumes the callback 'exec' is safe to execute concurrently across multiple threads if called by different GMs.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Executes a provided function on all GM players currently in the world who do not have elevated security permissions.\",\n  \"overview\": \"This function iterates through the global session map to identify all players present in the game world. It specifically targets Game Masters (GMs) by checking if their account security level is below that of an administrator, ensuring the action is only performed on authorized personnel without excessive privileges. The provided callback function is then invoked for each qualifying player.\",\n  \"params\": [\n    {\n      \"name\": \"exec\",\n      \"desc\": \"A std::function accepting a Player* pointer as its argument, representing the operation to perform on each GM.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"The function relies on global state from sWorldSessionMgr and AccountMgr. It assumes the callback 'exec' is safe to execute concurrently across multiple threads if called by different GMs.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::StartHackDetection@8517d37a:qwen3-5-4b": {
+  "hash": "e1bc460971d5",
+  "doc": {
+   "summary": "Initiates a comprehensive suite of anti-hack detection checks for a specific player based on their movement data and operation code.",
+   "overview": "This function serves as the primary entry point for the server's anticheat system, first verifying that global anticheat is enabled and the player is not a game master. It registers the player in an internal tracking map and then executes a series of specialized detection routines covering teleportation, speed manipulation, flying, jumping, vehicle interactions, liquid physics exploits, and battleground entry fraud.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement is being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Struct containing details about the player's recent movement trajectory and velocity."
+    },
+    {
+     "name": "opcode",
+     "desc": "A 32-bit integer representing the specific operation or command type associated with the movement."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (potential logging), Global State (modifies m_Players map)",
+   "notes": "Calls multiple specialized detection functions; returns early if player is in flight, on a transport, or in a vehicle.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Initiates a comprehensive suite of anti-hack detection checks for a specific player based on their movement data and operation code.\",\n  \"overview\": \"This function serves as the primary entry point for the server's anticheat system, first verifying that global anticheat is enabled and the player is not a game master. It registers the player in an internal tracking map and then executes a series of specialized detection routines covering teleportation, speed manipulation, flying, jumping, vehicle interactions, liquid physics exploits, and battleground entry fraud.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement is being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Struct containing details about the player's recent movement trajectory and velocity.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"A 32-bit integer representing the specific operation or command type associated with the movement.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (potential logging), Global State (modifies m_Players map)\",\n  \"notes\": \"Calls multiple specialized detection functions; returns early if player is in flight, on a transport, or in a vehicle.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::SendMiddleScreenGMMessage@23df103f:qwen3-5-4b": {
+  "hash": "1213b82a503a",
+  "doc": {
+   "summary": "Serializes a string into a WorldPacket and transmits it globally to all GM clients via the session manager.",
+   "overview": "This function constructs a network packet containing a notification message with the provided string payload. It then utilizes the global session manager to broadcast this packet to all Game Master (GM) sessions simultaneously, ensuring consistent anti-cheat communication across the server.",
+   "params": [
+    {
+     "name": "str",
+     "desc": "The text content to be sent as a GM notification message."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (broadcasts packet), Global state (uses sWorldSessionMgr)",
+   "notes": "Caller must ensure the string does not contain null bytes or characters that could corrupt the packet structure. Edge case: If the session manager is unavailable, the function may fail silently depending on internal implementation.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Serializes a string into a WorldPacket and transmits it globally to all GM clients via the session manager.\",\n  \"overview\": \"This function constructs a network packet containing a notification message with the provided string payload. It then utilizes the global session manager to broadcast this packet to all Game Master (GM) sessions simultaneously, ensuring consistent anti-cheat communication across the server.\",\n  \"params\": [\n    {\n      \"name\": \"str\",\n      \"desc\": \"The text content to be sent as a GM notification message.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (broadcasts packet), Global state (uses sWorldSessionMgr)\",\n  \"notes\": \"Caller must ensure the string does not contain null bytes or characters that could corrupt the packet structure. Edge case: If the session manager is unavailable, the function may fail silently depending on internal implementation.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetReportNameFromReportType@aca252b5:qwen3-5-4b": {
+  "hash": "1c8b01e83e0b",
+  "doc": {
+   "summary": "Returns a human-readable string describing the specific cheat type associated with a given ReportType enum value.",
+   "overview": "This utility function maps internal cheat detection flags to their corresponding descriptive names for use in logging, UI, or debugging. It utilizes a switch statement to handle various known hack categories, such as speed hacks, fly hacks, and teleportation, returning 'Unknown' for unrecognized types.",
+   "params": [
+    {
+     "name": "reportType",
+     "desc": "The internal enum value representing the specific cheat or counter measure detected."
+    }
+   ],
+   "returns": "const char*",
+   "side_effects": "None",
+   "notes": "Callers should ensure the input reportType is valid before calling to avoid unexpected 'Unknown' strings. The function is idempotent and safe for concurrent access as it performs no I/O or state modification.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns a human-readable string describing the specific cheat type associated with a given ReportType enum value.\",\n  \"overview\": \"This utility function maps internal cheat detection flags to their corresponding descriptive names for use in logging, UI, or debugging. It utilizes a switch statement to handle various known hack categories, such as speed hacks, fly hacks, and teleportation, returning 'Unknown' for unrecognized types.\",\n  \"params\": [\n    {\n      \"name\": \"reportType\",\n      \"desc\": \"The internal enum value representing the specific cheat or counter measure detected.\"\n    }\n  ],\n  \"returns\": \"const char*\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the input reportType is valid before calling to avoid unexpected 'Unknown' strings. The function is idempotent and safe for concurrent access as it performs no I/O or state modification.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetAlertFrequencyConfigFromReportType@5f189c7d:qwen3-5-4b": {
+  "hash": "c865053dce38",
+  "doc": {
+   "summary": "Retrieves the configured alert frequency for a specific cheat report type, ensuring a minimum value of 1.",
+   "overview": "This function acts as a configuration accessor within the AnticheatManager, mapping various hack detection report types to their corresponding alert thresholds. It queries the global configuration manager for specific option values associated with each report category and enforces a lower bound of 1 to prevent zero-frequency alerts. The implementation supports multiple cheat categories including speed hacks, fly mechanics, teleportation, and counter-measures.",
+   "params": [
+    {
+     "name": "reportType",
+     "desc": "An enumeration value representing the specific type of hack report (e.g., SPEED_HACK_REPORT, FLY_HACK_REPORT) for which the alert frequency is requested."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Reads from global configuration state via sConfigMgr; callers should ensure the configuration has been initialized. Returns a default value of 1 for any unrecognized reportType.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the configured alert frequency for a specific cheat report type, ensuring a minimum value of 1.\",\n  \"overview\": \"This function acts as a configuration accessor within the AnticheatManager, mapping various hack detection report types to their corresponding alert thresholds. It queries the global configuration manager for specific option values associated with each report category and enforces a lower bound of 1 to prevent zero-frequency alerts. The implementation supports multiple cheat categories including speed hacks, fly mechanics, teleportation, and counter-measures.\",\n  \"params\": [\n    {\n      \"name\": \"reportType\",\n      \"desc\": \"An enumeration value representing the specific type of hack report (e.g., SPEED_HACK_REPORT, FLY_HACK_REPORT) for which the alert frequency is requested.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Reads from global configuration state via sConfigMgr; callers should ensure the configuration has been initialized. Returns a default value of 1 for any unrecognized reportType.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetMinimumReportInChatThresholdConfigFromReportType@b2793667:qwen3-5-4b": {
+  "hash": "14da73d05169",
+  "doc": {
+   "summary": "Retrieves the minimum chat report threshold value for a specific anticheat hack type from the server configuration.",
+   "overview": "This function queries the global configuration manager to fetch the configured minimum threshold required to trigger an in-chat report for various cheat categories. It ensures the returned value is at least 1 by applying a maximum constraint before returning the result, which helps prevent edge cases where a configuration might be set to zero or negative.",
+   "params": [
+    {
+     "name": "reportType",
+     "desc": "The specific type of anticheat hack (e.g., speed hack, fly hack) for which the threshold is being queried."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "Global state: Reads from sConfigMgr; Network: None",
+   "notes": "Callers should ensure reportType matches one of the defined ReportTypes enum values to avoid returning the default value of 1. Edge cases include configurations set to 0 or negative, which are clamped to a minimum of 1.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the minimum chat report threshold value for a specific anticheat hack type from the server configuration.\",\n  \"overview\": \"This function queries the global configuration manager to fetch the configured minimum threshold required to trigger an in-chat report for various cheat categories. It ensures the returned value is at least 1 by applying a maximum constraint before returning the result, which helps prevent edge cases where a configuration might be set to zero or negative.\",\n  \"params\": [\n    {\n      \"name\": \"reportType\",\n      \"desc\": \"The specific type of anticheat hack (e.g., speed hack, fly hack) for which the threshold is being queried.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"Global state: Reads from sConfigMgr; Network: None\",\n  \"notes\": \"Callers should ensure reportType matches one of the defined ReportTypes enum values to avoid returning the default value of 1. Edge cases include configurations set to 0 or negative, which are clamped to a minimum of 1.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetMaximumReportInChatThresholdConfigFromReportType@1056233e:qwen3-5-4b": {
+  "hash": "136aed256586",
+  "doc": {
+   "summary": "Retrieves the configured maximum chat report threshold for a specific anticheat hack type, ensuring a minimum value of 1.",
+   "overview": "This function queries the configuration manager to fetch the current maximum threshold for reporting a specific cheat action in-game chat. It iterates through various hack types including speed hacks, fly hacks, and teleportation, returning the corresponding configured limit or a default fallback if an unknown type is provided.",
+   "params": [
+    {
+     "name": "reportType",
+     "desc": "The specific anticheat hack category (e.g., SPEED_HACK_REPORT, FLY_HACK_REPORT) to determine the threshold for."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Calls sConfigMgr->GetOption which may perform I/O if the configuration is not cached; returns a minimum of 1 regardless of input to prevent zero thresholds.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the configured maximum chat report threshold for a specific anticheat hack type, ensuring a minimum value of 1.\",\n  \"overview\": \"This function queries the configuration manager to fetch the current maximum threshold for reporting a specific cheat action in-game chat. It iterates through various hack types including speed hacks, fly hacks, and teleportation, returning the corresponding configured limit or a default fallback if an unknown type is provided.\",\n  \"params\": [\n    {\n      \"name\": \"reportType\",\n      \"desc\": \"The specific anticheat hack category (e.g., SPEED_HACK_REPORT, FLY_HACK_REPORT) to determine the threshold for.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Calls sConfigMgr->GetOption which may perform I/O if the configuration is not cached; returns a minimum of 1 regardless of input to prevent zero thresholds.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::BuildAndSendReportToIngameGameMasters@d42ac899:qwen3-5-4b": {
+  "hash": "6d06617931bb",
+  "doc": {
+   "summary": "BuildAndSendReportToIngameGameMasters processes player reports by checking alert frequency thresholds and notifying game masters via in-game chat messages.",
+   "overview": "This function evaluates whether a player's report should trigger an alert based on the configured frequency for the specific report type. If the counter of reports matches the alert threshold, it displays a middle-screen message to the player and conditionally sends detailed notifications to all game masters through the DoToAllGMs loop.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object generating the report."
+    },
+    {
+     "name": "reportType",
+     "desc": "Enum value indicating the type of cheat behavior being reported (e.g., TELEPORT_HACK_REPORT, IGNORE_CONTROL_REPORT)."
+    },
+    {
+     "name": "optMovementInfo",
+     "desc": "Optional MovementInfo object containing position data required specifically for teleport hack reports."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (DoToAllGMs loop), I/O (ChatHandler messages)",
+   "notes": "Calls GetGUID, GetTypeReports, and various configuration getters; relies on DoToAllGMs to broadcast messages to all game masters.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"BuildAndSendReportToIngameGameMasters processes player reports by checking alert frequency thresholds and notifying game masters via in-game chat messages.\",\n  \"overview\": \"This function evaluates whether a player's report should trigger an alert based on the configured frequency for the specific report type. If the counter of reports matches the alert threshold, it displays a middle-screen message to the player and conditionally sends detailed notifications to all game masters through the DoToAllGMs loop.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object generating the report.\"\n    },\n    {\n      \"name\": \"reportType\",\n      \"desc\": \"Enum value indicating the type of cheat behavior being reported (e.g., TELEPORT_HACK_REPORT, IGNORE_CONTROL_REPORT).\"\n    },\n    {\n      \"name\": \"optMovementInfo\",\n      \"desc\": \"Optional MovementInfo object containing position data required specifically for teleport hack reports.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (DoToAllGMs loop), I/O (ChatHandler messages)\",\n  \"notes\": \"Calls GetGUID, GetTypeReports, and various configuration getters; relies on DoToAllGMs to broadcast messages to all game masters.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetTeleportSkillCooldownDurationInMS@b2a5bc75:qwen3-5-4b": {
+  "hash": "9b2512a613ff",
+  "doc": {
+   "summary": "Returns the teleport skill cooldown duration in milliseconds for a player based on their class and active auras.",
+   "overview": "This function retrieves the specific cooldown time for the Teleport ability by first checking the player's class. It then evaluates whether the player has an active aura that reduces the cooldown, returning a shortened duration if present, otherwise falling back to the standard base duration for that class.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose Teleport skill cooldown is being queried."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Returns 0 for classes other than Rogue or Mage. Returns a reduced duration (20ms, 13ms) if the respective rank aura is active; otherwise returns the base duration (30ms, 15ms).",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the teleport skill cooldown duration in milliseconds for a player based on their class and active auras.\",\n  \"overview\": \"This function retrieves the specific cooldown time for the Teleport ability by first checking the player's class. It then evaluates whether the player has an active aura that reduces the cooldown, returning a shortened duration if present, otherwise falling back to the standard base duration for that class.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose Teleport skill cooldown is being queried.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Returns 0 for classes other than Rogue or Mage. Returns a reduced duration (20ms, 13ms) if the respective rank aura is active; otherwise returns the base duration (30ms, 15ms).\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetTeleportSkillDistanceInYards@03024b04:qwen3-5-4b": {
+  "hash": "ca71399b4f53",
+  "doc": {
+   "summary": "Returns the teleport skill distance in yards for a player based on their class and active auras.",
+   "overview": "This function calculates the effective distance for a player's teleport ability by checking their specific class. It returns a fixed value for Rogues, while Mages receive a conditional distance that increases if they have the Glyph of Blink active; all other classes return zero. The implementation relies on the player object to determine class and aura status.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose teleport skill distance is being calculated."
+    }
+   ],
+   "returns": "float",
+   "side_effects": "None",
+   "notes": "Callers should ensure the player pointer is valid before invoking. The function returns 0.0f for any class not explicitly handled, which may indicate a bug if teleport functionality is expected for other classes.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the teleport skill distance in yards for a player based on their class and active auras.\",\n  \"overview\": \"This function calculates the effective distance for a player's teleport ability by checking their specific class. It returns a fixed value for Rogues, while Mages receive a conditional distance that increases if they have the Glyph of Blink active; all other classes return zero. The implementation relies on the player object to determine class and aura status.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose teleport skill distance is being calculated.\"\n    }\n  ],\n  \"returns\": \"float\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the player pointer is valid before invoking. The function returns 0.0f for any class not explicitly handled, which may indicate a bug if teleport functionality is expected for other classes.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetPlayerCurrentSpeedRate@5b8ef069:qwen3-5-4b": {
+  "hash": "51fb4fd969cc",
+  "doc": {
+   "summary": "Returns the current speed rate of a player based on their active movement mode.",
+   "overview": "This function determines the appropriate speed value for a player by checking their current movement flags and state. It prioritizes swimming, followed by flying, walking, and finally running as the default fallback if no specific flag is set.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose speed rate is being queried."
+    }
+   ],
+   "returns": "float",
+   "side_effects": "None",
+   "notes": "Callers should ensure the player pointer is valid before invoking. The function relies on internal flags like MOVEMENTFLAG_SWIMMING and IsFlying() to determine logic flow.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns the current speed rate of a player based on their active movement mode.\",\n  \"overview\": \"This function determines the appropriate speed value for a player by checking their current movement flags and state. It prioritizes swimming, followed by flying, walking, and finally running as the default fallback if no specific flag is set.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose speed rate is being queried.\"\n    }\n  ],\n  \"returns\": \"float\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the player pointer is valid before invoking. The function relies on internal flags like MOVEMENTFLAG_SWIMMING and IsFlying() to determine logic flow.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::SpeedHackDetection@42a28cd2:qwen3-5-4b": {
+  "hash": "0cdcd63d510b",
+  "doc": {
+   "summary": "Detects speed hacking by analyzing movement data and applying countermeasures for time manipulation.",
+   "overview": "This function checks if a player is attempting to manipulate their movement time or position to bypass speed limits. It first verifies that the anticheat module is enabled and that the player has moved on a specific map, then calculates the distance and time difference between the current and previous movement records. If the calculated time difference indicates potential manipulation (such as zero or negative values), the function triggers various countermeasures including logging, GM alerts, and report building.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement is being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing the current movement data (position and timestamp) for the player."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "I/O, network, global state",
+   "notes": "Calls BuildReport to generate a countermeasure report; triggers GM screen messages and chat alerts if time manipulation is detected; relies on sConfigMgr for configurable anticheat options.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects speed hacking by analyzing movement data and applying countermeasures for time manipulation.\",\n  \"overview\": \"This function checks if a player is attempting to manipulate their movement time or position to bypass speed limits. It first verifies that the anticheat module is enabled and that the player has moved on a specific map, then calculates the distance and time difference between the current and previous movement records. If the calculated time difference indicates potential manipulation (such as zero or negative values), the function triggers various countermeasures including logging, GM alerts, and report building.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement is being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing the current movement data (position and timestamp) for the player.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O, network, global state\",\n  \"notes\": \"Calls BuildReport to generate a countermeasure report; triggers GM screen messages and chat alerts if time manipulation is detected; relies on sConfigMgr for configurable anticheat options.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::FlyHackDetection@4f12bb8d:qwen3-5-4b": {
+  "hash": "370ff4f8ae82",
+  "doc": {
+   "summary": "Detects and counters fly hacks by checking for unauthorized flight capabilities and applying counter measures if enabled.",
+   "overview": "This function first verifies whether the anticheat module is active and whether the player possesses any legitimate flight-related auras. It then evaluates movement flags to determine if the player is attempting to fly without proper permissions, adjusting strictness based on configuration settings such as water proximity or ascending/descending movement. If a violation is detected, the function logs the incident with latency data and optionally executes counter measures like sending server opcodes to disable flight.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being checked for fly-hack behavior."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing movement flags and data used to determine if the player is flying or attempting to fly."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (sends SMSG_MOVE_UNSET_CAN_FLY opcode), I/O (logs via LOG_INFO, sends chat messages to GMs)",
+   "notes": "Calls BuildReport for both FLY_HACK_REPORT and COUNTER_MEASURES_REPORT depending on whether counter measures were triggered; relies on sConfigMgr for dynamic behavior configuration.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and counters fly hacks by checking for unauthorized flight capabilities and applying counter measures if enabled.\",\n  \"overview\": \"This function first verifies whether the anticheat module is active and whether the player possesses any legitimate flight-related auras. It then evaluates movement flags to determine if the player is attempting to fly without proper permissions, adjusting strictness based on configuration settings such as water proximity or ascending/descending movement. If a violation is detected, the function logs the incident with latency data and optionally executes counter measures like sending server opcodes to disable flight.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being checked for fly-hack behavior.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing movement flags and data used to determine if the player is flying or attempting to fly.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (sends SMSG_MOVE_UNSET_CAN_FLY opcode), I/O (logs via LOG_INFO, sends chat messages to GMs)\",\n  \"notes\": \"Calls BuildReport for both FLY_HACK_REPORT and COUNTER_MEASURES_REPORT depending on whether counter measures were triggered; relies on sConfigMgr for dynamic behavior configuration.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::JumpHackDetection@faffb8f0:qwen3-5-4b": {
+  "hash": "a5149a1ce4ef",
+  "doc": {
+   "summary": "Detects and counters jump hacks by analyzing movement patterns, latency, and environmental conditions to flag suspicious players.",
+   "overview": "This function implements a two-tiered anti-cheat system for detecting illegal jumping. The first tier checks for basic jump-hack signatures (specific opcode combinations) and applies immediate countermeasures like forcing the player to fall and alerting administrators if configured. The second tier performs a stricter analysis, verifying that the player is not flying, swimming, or using gravity-disabling auras, while also checking specific area exclusions and movement physics consistency.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being analyzed for potential cheating."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Struct containing the current movement data (position, velocity, flags) used to calculate jump physics and detect anomalies."
+    },
+    {
+     "name": "opcode",
+     "desc": "The network message opcode sent by the client; specifically checks for MSG_MOVE_JUMP to identify jump attempts."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs, GM alerts), Global State (BuildReport calls)",
+   "notes": "Calls BuildReport with JUMP_HACK_REPORT or COUNTER_MEASURES_REPORT; logs latency and coordinates to server console; triggers motion master fall command; checks for specific aura types and movement flags.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and counters jump hacks by analyzing movement patterns, latency, and environmental conditions to flag suspicious players.\",\n  \"overview\": \"This function implements a two-tiered anti-cheat system for detecting illegal jumping. The first tier checks for basic jump-hack signatures (specific opcode combinations) and applies immediate countermeasures like forcing the player to fall and alerting administrators if configured. The second tier performs a stricter analysis, verifying that the player is not flying, swimming, or using gravity-disabling auras, while also checking specific area exclusions and movement physics consistency.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being analyzed for potential cheating.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Struct containing the current movement data (position, velocity, flags) used to calculate jump physics and detect anomalies.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The network message opcode sent by the client; specifically checks for MSG_MOVE_JUMP to identify jump attempts.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs, GM alerts), Global State (BuildReport calls)\",\n  \"notes\": \"Calls BuildReport with JUMP_HACK_REPORT or COUNTER_MEASURES_REPORT; logs latency and coordinates to server console; triggers motion master fall command; checks for specific aura types and movement flags.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::TeleportPlaneHackDetection@3ebf5c02:qwen3-5-4b": {
+  "hash": "42f992e39eef",
+  "doc": {
+   "summary": "Detects and logs teleport-to-plane cheating by verifying player movement flags, aura status, and position consistency against the ground height.",
+   "overview": "This function checks if a player is attempting to bypass anti-cheat measures by teleporting directly to a plane or flying without proper movement flags. It first verifies configuration settings and returns early if the feature is disabled, the player is in a specific area, or possesses relevant auras like water walking or ghost status. The core detection logic compares the current movement information against the last recorded movement data and validates that the player's vertical position aligns with the calculated ground height.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being analyzed for cheating behavior."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Struct containing the current movement data, including position and flags like falling or swimming."
+    },
+    {
+     "name": "opcode",
+     "desc": "The network message opcode sent by the player, used to verify if the move was a jump or fall-land."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network logging via LOG_INFO and report generation via BuildReport; reads global configuration options.",
+   "notes": "Caller must ensure movementInfo is valid before invoking. Edge case: If the player's position Z matches the ground Z exactly but differs by more than 2.0f or less than -1.0f, a hack is flagged.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and logs teleport-to-plane cheating by verifying player movement flags, aura status, and position consistency against the ground height.\",\n  \"overview\": \"This function checks if a player is attempting to bypass anti-cheat measures by teleporting directly to a plane or flying without proper movement flags. It first verifies configuration settings and returns early if the feature is disabled, the player is in a specific area, or possesses relevant auras like water walking or ghost status. The core detection logic compares the current movement information against the last recorded movement data and validates that the player's vertical position aligns with the calculated ground height.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being analyzed for cheating behavior.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Struct containing the current movement data, including position and flags like falling or swimming.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The network message opcode sent by the player, used to verify if the move was a jump or fall-land.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network logging via LOG_INFO and report generation via BuildReport; reads global configuration options.\",\n  \"notes\": \"Caller must ensure movementInfo is valid before invoking. Edge case: If the player's position Z matches the ground Z exactly but differs by more than 2.0f or less than -1.0f, a hack is flagged.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::ClimbHackDetection@bed2a9d8:qwen3-5-4b": {
+  "hash": "fc3446395930",
+  "doc": {
+   "summary": "Detects and logs climb hacks by analyzing vertical position differences and angles relative to player movement.",
+   "overview": "This function checks if a player is attempting to climb the map using unauthorized means by comparing their current position with their movement vector. It first validates configuration settings and ensures the player is not in water, flying, or falling before performing calculations. If a hack is detected based on specific geometric criteria, it logs the incident and builds a report.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being analyzed for potential cheating."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing movement data, specifically the target position used to calculate distance and angle."
+    },
+    {
+     "name": "opcode",
+     "desc": "The message opcode sent by the player; if MSG_MOVE_JUMP is detected, the function returns early."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs remote address), I/O (LOG_INFO output), Global State (BuildReport)",
+   "notes": "Edge case: Returns early if player is in water, flying, falling, or performing a jump. Requires valid configuration options to be enabled.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and logs climb hacks by analyzing vertical position differences and angles relative to player movement.\",\n  \"overview\": \"This function checks if a player is attempting to climb the map using unauthorized means by comparing their current position with their movement vector. It first validates configuration settings and ensures the player is not in water, flying, or falling before performing calculations. If a hack is detected based on specific geometric criteria, it logs the incident and builds a report.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being analyzed for potential cheating.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing movement data, specifically the target position used to calculate distance and angle.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The message opcode sent by the player; if MSG_MOVE_JUMP is detected, the function returns early.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs remote address), I/O (LOG_INFO output), Global State (BuildReport)\",\n  \"notes\": \"Edge case: Returns early if player is in water, flying, falling, or performing a jump. Requires valid configuration options to be enabled.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::TeleportHackDetection@dd79a244:qwen3-5-4b": {
+  "hash": "e6828b9a0848",
+  "doc": {
+   "summary": "Detects and mitigates teleportation hacks by analyzing movement vectors between the last known position and the current input.",
+   "overview": "This function calculates the distance traveled by a player in X, Y, and Z dimensions to identify suspicious teleportation patterns. It includes specific exemptions for players on transport vehicles, falling, or engaged in duels where such behavior might be legitimate. If a significant displacement is detected without valid teleportation permissions, it logs the event, notifies administrators, and potentially disables further teleportation for the affected player.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement is being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing the current movement data (position, flags) for the player."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (sends GM messages), Global State (logs to server console, modifies player teleport permissions via BuildReport)",
+   "notes": "Callers should ensure movementInfo is valid before invoking. Edge case: If a player is in a duel and attempts to teleport with high displacement but has CanTeleport enabled, the function disables their ability to teleport rather than flagging them as cheating.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and mitigates teleportation hacks by analyzing movement vectors between the last known position and the current input.\",\n  \"overview\": \"This function calculates the distance traveled by a player in X, Y, and Z dimensions to identify suspicious teleportation patterns. It includes specific exemptions for players on transport vehicles, falling, or engaged in duels where such behavior might be legitimate. If a significant displacement is detected without valid teleportation permissions, it logs the event, notifies administrators, and potentially disables further teleportation for the affected player.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement is being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing the current movement data (position, flags) for the player.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (sends GM messages), Global State (logs to server console, modifies player teleport permissions via BuildReport)\",\n  \"notes\": \"Callers should ensure movementInfo is valid before invoking. Edge case: If a player is in a duel and attempts to teleport with high displacement but has CanTeleport enabled, the function disables their ability to teleport rather than flagging them as cheating.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::IgnoreControlHackDetection@771bdcba:qwen3-5-4b": {
+  "hash": "3304334de5d7",
+  "doc": {
+   "summary": "This function detects and logs control hack attempts by analyzing player movement patterns against latency and aura conditions.",
+   "overview": "The function first checks if the global anticheat configuration is enabled, returning early if disabled. It then evaluates specific movement opcodes and flags to exclude legitimate actions like jumping or falling from vehicles before calculating latency. If a player has root but no vehicle and exhibits high latency, the function compares their last known position with the current movement data to identify unauthorized teleportation.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being analyzed for potential cheating."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing the current movement data, including position and flags like falling or swimming."
+    },
+    {
+     "name": "opcode",
+     "desc": "The specific movement message opcode received from the client."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs remote address), Global State (writes to LOG_INFO, modifies report flags via BuildReport)",
+   "notes": "Callers should ensure player pointers are valid before invoking. Edge case: If a player has root and high latency but moves normally, the function will still log the event if position changes occur.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"This function detects and logs control hack attempts by analyzing player movement patterns against latency and aura conditions.\",\n  \"overview\": \"The function first checks if the global anticheat configuration is enabled, returning early if disabled. It then evaluates specific movement opcodes and flags to exclude legitimate actions like jumping or falling from vehicles before calculating latency. If a player has root but no vehicle and exhibits high latency, the function compares their last known position with the current movement data to identify unauthorized teleportation.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being analyzed for potential cheating.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing the current movement data, including position and flags like falling or swimming.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The specific movement message opcode received from the client.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs remote address), Global State (writes to LOG_INFO, modifies report flags via BuildReport)\",\n  \"notes\": \"Callers should ensure player pointers are valid before invoking. Edge case: If a player has root and high latency but moves normally, the function will still log the event if position changes occur.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GravityHackDetection@10c962b1:qwen3-5-4b": {
+  "hash": "5f6ef3b02a6d",
+  "doc": {
+   "summary": "Detects and reports gravity hacks by analyzing player movement data against configured thresholds.",
+   "overview": "This function checks if a specific gravity hack detection option is enabled in the configuration. If active, it verifies whether the player has an aura that disables gravity checks before proceeding. The core logic compares the vertical speed of the player's last move against a threshold to identify unauthorized upward movement.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement is being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Structure containing movement data, specifically used to access the vertical speed (zspeed) of the last move opcode."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs remote address), I/O (writes log files if configured)",
+   "notes": "Caller must ensure movementInfo contains valid jump data; returns early if feather fall aura is present or gravity flag is disabled.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and reports gravity hacks by analyzing player movement data against configured thresholds.\",\n  \"overview\": \"This function checks if a specific gravity hack detection option is enabled in the configuration. If active, it verifies whether the player has an aura that disables gravity checks before proceeding. The core logic compares the vertical speed of the player's last move against a threshold to identify unauthorized upward movement.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement is being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Structure containing movement data, specifically used to access the vertical speed (zspeed) of the last move opcode.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs remote address), I/O (writes log files if configured)\",\n  \"notes\": \"Caller must ensure movementInfo contains valid jump data; returns early if feather fall aura is present or gravity flag is disabled.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::WalkOnWaterHackDetection@05ffc6ac:qwen3-5-4b": {
+  "hash": "b38439154926",
+  "doc": {
+   "summary": "Detects and reports players attempting to walk on water without valid game mechanics or aches.",
+   "overview": "This function checks if a player is walking on water while lacking the appropriate movement flags or active spells. It first verifies that the global anticheat configuration for water walking detection is enabled, then compares the player's current position and movement flags against their last recorded state to identify inconsistencies. If a hack is detected, it logs the event with latency and IP details and builds a report before returning.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being checked for water walking behavior."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing the player's current movement data, including position and movement flags."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs remote address), Global State (BuildReport)",
+   "notes": "Returns early if the anticheat option is disabled, the player is flying, or has a ghost aura. Also returns early if the player already has valid water walking flags in both current and previous states, or lacks them in both. Requires access to sConfigMgr, m_Players map, and various player session data.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and reports players attempting to walk on water without valid game mechanics or aches.\",\n  \"overview\": \"This function checks if a player is walking on water while lacking the appropriate movement flags or active spells. It first verifies that the global anticheat configuration for water walking detection is enabled, then compares the player's current position and movement flags against their last recorded state to identify inconsistencies. If a hack is detected, it logs the event with latency and IP details and builds a report before returning.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being checked for water walking behavior.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing the player's current movement data, including position and movement flags.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs remote address), Global State (BuildReport)\",\n  \"notes\": \"Returns early if the anticheat option is disabled, the player is flying, or has a ghost aura. Also returns early if the player already has valid water walking flags in both current and previous states, or lacks them in both. Requires access to sConfigMgr, m_Players map, and various player session data.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::ZAxisHackDetection@a52fa694:qwen3-5-4b": {
+  "hash": "70b4a56e7abd",
+  "doc": {
+   "summary": "Detects and mitigates Z-axis flying hacks by verifying player position relative to the floor and comparing current movement data against historical records.",
+   "overview": "This function checks if a player is attempting to fly above their solid ground using specific configuration flags. It first validates that the anticheat module is enabled, the player is not flying or in water, and is located within allowed areas before proceeding. If a hack is detected where the player's position exceeds the floor height by more than 2.5 units while maintaining a consistent horizontal position compared to their last recorded movement, the function logs the incident and applies countermeasures such as forcing the player to fall.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being analyzed for potential cheating."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Structure containing the current movement data (position, flags) used to detect anomalous vertical movement."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "I/O, network, global state",
+   "notes": "Calls BuildReport for logging; triggers motion master fall command and sends GM alerts if configured; relies on sConfigMgr options for behavior control.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and mitigates Z-axis flying hacks by verifying player position relative to the floor and comparing current movement data against historical records.\",\n  \"overview\": \"This function checks if a player is attempting to fly above their solid ground using specific configuration flags. It first validates that the anticheat module is enabled, the player is not flying or in water, and is located within allowed areas before proceeding. If a hack is detected where the player's position exceeds the floor height by more than 2.5 units while maintaining a consistent horizontal position compared to their last recorded movement, the function logs the incident and applies countermeasures such as forcing the player to fall.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being analyzed for potential cheating.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Structure containing the current movement data (position, flags) used to detect anomalous vertical movement.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O, network, global state\",\n  \"notes\": \"Calls BuildReport for logging; triggers motion master fall command and sends GM alerts if configured; relies on sConfigMgr options for behavior control.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AntiSwimHackDetection@fa0a37df:qwen3-5-4b": {
+  "hash": "74c96c82650b",
+  "doc": {
+   "summary": "Detects and logs anti-swim hacks by analyzing player movement flags and liquid status to identify unauthorized swimming behavior.",
+   "overview": "This function checks if a player is attempting to swim without proper equipment or permissions by examining their current area, liquid status, and movement flags. If the configuration option for anti-swim detection is disabled, the function returns immediately; otherwise, it evaluates specific conditions such as being in water without swimming flags enabled. When a violation is detected, the system logs the incident with latency data and constructs a report using the provided player and movement information.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement is being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing movement flags and data used to determine if the player is swimming or falling."
+    },
+    {
+     "name": "opcode",
+     "desc": "The message opcode sent by the client; specifically checks for MSG_MOVE_JUMP to exclude jump actions from detection."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Logs information via LOG_INFO if a hack is detected and calls BuildReport to generate an anti-cheat report.",
+   "notes": "The function returns early if the player is in area ID 2100, already above water or walking on water, performing a jump, or flagged as swimming/falling. It requires access to global configuration via sConfigMgr and session data for latency and IP logging.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and logs anti-swim hacks by analyzing player movement flags and liquid status to identify unauthorized swimming behavior.\",\n  \"overview\": \"This function checks if a player is attempting to swim without proper equipment or permissions by examining their current area, liquid status, and movement flags. If the configuration option for anti-swim detection is disabled, the function returns immediately; otherwise, it evaluates specific conditions such as being in water without swimming flags enabled. When a violation is detected, the system logs the incident with latency data and constructs a report using the provided player and movement information.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement is being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing movement flags and data used to determine if the player is swimming or falling.\"\n    },\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The message opcode sent by the client; specifically checks for MSG_MOVE_JUMP to exclude jump actions from detection.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Logs information via LOG_INFO if a hack is detected and calls BuildReport to generate an anti-cheat report.\",\n  \"notes\": \"The function returns early if the player is in area ID 2100, already above water or walking on water, performing a jump, or flagged as swimming/falling. It requires access to global configuration via sConfigMgr and session data for latency and IP logging.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AntiKnockBackHackDetection@c25aba65:qwen3-5-4b": {
+  "hash": "35d42271da6d",
+  "doc": {
+   "summary": "Detects and mitigates knockback hacks by verifying if a player's current movement matches their last recorded position.",
+   "overview": "This function checks whether a player is attempting to bypass the knockback mechanic by moving to a location identical to their previous position. If the movement is detected as suspicious, it logs the incident with latency and coordinate details, generates a hack report, or disables the player's ability to use knockback depending on the configuration.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being analyzed for potential cheating."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Struct containing the current movement data (position) used to compare against historical movement records."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "I/O, global state",
+   "notes": "Calls BuildReport if a hack is confirmed; may disable CanKnockback for the player. Requires sConfigMgr and m_Players to be initialized.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and mitigates knockback hacks by verifying if a player's current movement matches their last recorded position.\",\n  \"overview\": \"This function checks whether a player is attempting to bypass the knockback mechanic by moving to a location identical to their previous position. If the movement is detected as suspicious, it logs the incident with latency and coordinate details, generates a hack report, or disables the player's ability to use knockback depending on the configuration.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being analyzed for potential cheating.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Struct containing the current movement data (position) used to compare against historical movement records.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O, global state\",\n  \"notes\": \"Calls BuildReport if a hack is confirmed; may disable CanKnockback for the player. Requires sConfigMgr and m_Players to be initialized.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::NoFallDamageDetection@6254b8c9:qwen3-5-4b": {
+  "hash": "274545d24283",
+  "doc": {
+   "summary": "Detects and flags players using fall damage hacks by calculating the distance fallen and comparing it against expected physics values.",
+   "overview": "This function checks if a player is falling from a significant height without taking the corresponding damage, which indicates a potential cheat. It first verifies global configuration settings and ensures the player does not have protective auras like Ghost or Feather Fall before performing calculations. If a fall distance exceeds the safe threshold while the player is in a falling state, the function calculates the expected damage and logs the incident if configured.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement and health data are being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Structure containing the current movement information, specifically the position (Z-coordinate) used to calculate fall distance."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs remote address), Global State (writes configuration options)",
+   "notes": "Relies on internal state like m_Players and sConfigMgr; triggers logging and report building if a hack is detected.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and flags players using fall damage hacks by calculating the distance fallen and comparing it against expected physics values.\",\n  \"overview\": \"This function checks if a player is falling from a significant height without taking the corresponding damage, which indicates a potential cheat. It first verifies global configuration settings and ensures the player does not have protective auras like Ghost or Feather Fall before performing calculations. If a fall distance exceeds the safe threshold while the player is in a falling state, the function calculates the expected damage and logs the incident if configured.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement and health data are being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Structure containing the current movement information, specifically the position (Z-coordinate) used to calculate fall distance.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs remote address), Global State (writes configuration options)\",\n  \"notes\": \"Relies on internal state like m_Players and sConfigMgr; triggers logging and report building if a hack is detected.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::BGreport@f21fcf6b:qwen3-5-4b": {
+  "hash": "3c5b695cc6ee",
+  "doc": {
+   "summary": "Detects and reports BG start spot exploitation attempts by checking teleport frequency thresholds and notifying GMs.",
+   "overview": "This function monitors player movement patterns to identify exploits where players attempt to bypass the Battle Ground (BG) starting zone. It calculates the report counter for the specific TELEPORT_HACK_REPORT type and triggers a middle-screen message if the count matches the configured alert frequency. Depending on the latency and whether the report count falls within chat thresholds, it either broadcasts an exploit warning to all GMs or logs detailed session data including position coordinates.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement is being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Movement information structure containing details about the detected teleportation event."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (GM message broadcast), I/O (Log output)",
+   "notes": "Calls BuildReport to finalize the report; relies on global configuration for alert frequencies and thresholds.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and reports BG start spot exploitation attempts by checking teleport frequency thresholds and notifying GMs.\",\n  \"overview\": \"This function monitors player movement patterns to identify exploits where players attempt to bypass the Battle Ground (BG) starting zone. It calculates the report counter for the specific TELEPORT_HACK_REPORT type and triggers a middle-screen message if the count matches the configured alert frequency. Depending on the latency and whether the report count falls within chat thresholds, it either broadcasts an exploit warning to all GMs or logs detailed session data including position coordinates.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement is being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Movement information structure containing details about the detected teleportation event.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (GM message broadcast), I/O (Log output)\",\n  \"notes\": \"Calls BuildReport to finalize the report; relies on global configuration for alert frequencies and thresholds.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetTeamStartPosition@2467c55d:qwen3-5-4b": {
+  "hash": "209fddfc6836",
+  "doc": {
+   "summary": "Returns a pointer to the starting position of the specified team.",
+   "overview": "This function retrieves the initial position for a given team by accessing a pre-initialized array. It is typically called during game initialization or when a player joins a team to determine their spawn coordinates. The function assumes that the team has been properly registered and its start position set prior to invocation.",
+   "params": [
+    {
+     "name": "teamId",
+     "desc": "The unique identifier of the team whose starting position is requested."
+    }
+   ],
+   "returns": "Position const*",
+   "side_effects": "None",
+   "notes": "Callers must ensure the team exists and its start position has been configured before calling this function to avoid accessing uninitialized memory. Returning a null pointer indicates an invalid or unconfigured team.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns a pointer to the starting position of the specified team.\",\n  \"overview\": \"This function retrieves the initial position for a given team by accessing a pre-initialized array. It is typically called during game initialization or when a player joins a team to determine their spawn coordinates. The function assumes that the team has been properly registered and its start position set prior to invocation.\",\n  \"params\": [\n    {\n      \"name\": \"teamId\",\n      \"desc\": \"The unique identifier of the team whose starting position is requested.\"\n    }\n  ],\n  \"returns\": \"Position const*\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers must ensure the team exists and its start position has been configured before calling this function to avoid accessing uninitialized memory. Returning a null pointer indicates an invalid or unconfigured team.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::CheckStartPositions@cdd5720c:qwen3-5-4b": {
+  "hash": "3735541c245f",
+  "doc": {
+   "summary": "Checks if a player has teleported outside their designated background start area and, if so, teleports them back while logging the exploit.",
+   "overview": "This function validates whether a player's current position matches their team's configured start location for the background map. If the distance exceeds the allowed threshold, it triggers a countermeasure sequence that includes building an internal report, notifying game masters via screen and chat alerts, and forcibly teleporting the player to their correct starting coordinates.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose start position is being verified."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Movement information object used to construct the internal countermeasure report."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (logs, chat messages), I/O (screen alerts), Global State (builds report), Player State (teleports player)",
+   "notes": "Caller must ensure the player object is valid before invoking. Edge case: If the start position is null or invalid, the distance check may behave unexpectedly depending on implementation details of GetTeamStartPosition.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Checks if a player has teleported outside their designated background start area and, if so, teleports them back while logging the exploit.\",\n  \"overview\": \"This function validates whether a player's current position matches their team's configured start location for the background map. If the distance exceeds the allowed threshold, it triggers a countermeasure sequence that includes building an internal report, notifying game masters via screen and chat alerts, and forcibly teleporting the player to their correct starting coordinates.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose start position is being verified.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Movement information object used to construct the internal countermeasure report.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (logs, chat messages), I/O (screen alerts), Global State (builds report), Player State (teleports player)\",\n  \"notes\": \"Caller must ensure the player object is valid before invoking. Edge case: If the start position is null or invalid, the distance check may behave unexpectedly depending on implementation details of GetTeamStartPosition.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::BGStartExploit@9a7d195d:qwen3-5-4b": {
+  "hash": "222bcb1635c3",
+  "doc": {
+   "summary": "Detects and reports background start position exploits for specific battlegrounds based on player team and movement coordinates.",
+   "overview": "This function checks if the global anti-cheat detection for background start hacks is enabled, then evaluates a player's current map and movement data against predefined coordinate thresholds. It specifically targets players in battlegrounds with 'WAIT_JOIN' status who attempt to spawn outside designated safe zones for their respective team (Alliance or Horde). If an illegal spawn position is detected, the function triggers reports via the anti-cheat manager.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose movement and spawn location are being analyzed."
+    },
+    {
+     "name": "movementInfo",
+     "desc": "Object containing the player's current position (X, Y, Z) and movement flags used to validate spawn coordinates."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Network (BGreport), Global State (sAnticheatMgr)",
+   "notes": "Calls sAnticheatMgr->BGreport and sAnticheatMgr->CheckStartPositions; only active if Anticheat.DetectBGStartHack config is true; logic varies by battleground ID (30, 489, 529, 566) and team assignment.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Detects and reports background start position exploits for specific battlegrounds based on player team and movement coordinates.\",\n  \"overview\": \"This function checks if the global anti-cheat detection for background start hacks is enabled, then evaluates a player's current map and movement data against predefined coordinate thresholds. It specifically targets players in battlegrounds with 'WAIT_JOIN' status who attempt to spawn outside designated safe zones for their respective team (Alliance or Horde). If an illegal spawn position is detected, the function triggers reports via the anti-cheat manager.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose movement and spawn location are being analyzed.\"\n    },\n    {\n      \"name\": \"movementInfo\",\n      \"desc\": \"Object containing the player's current position (X, Y, Z) and movement flags used to validate spawn coordinates.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (BGreport), Global State (sAnticheatMgr)\",\n  \"notes\": \"Calls sAnticheatMgr->BGreport and sAnticheatMgr->CheckStartPositions; only active if Anticheat.DetectBGStartHack config is true; logic varies by battleground ID (30, 489, 529, 566) and team assignment.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::HandlePlayerLogin@269b9285:qwen3-5-4b": {
+  "hash": "c8c473477682",
+  "doc": {
+   "summary": "Handles the login process for a player by clearing their report status, updating their position in the player database, and setting their daily report state.",
+   "overview": "This function is invoked when a player successfully logs into the game server. It first clears any existing reports associated with the player's GUID from the CharacterDatabase to ensure a clean state upon re-entry. Subsequently, it acquires a lock on the shared mutex to safely update the player's position coordinates and map ID within the internal m_Players map. Finally, it checks if the player has completed their daily report; if so, it sets their daily report state to true while maintaining the necessary synchronization.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object representing the logged-in user."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Database writes (CharacterDatabase.Execute, CharacterDatabase.Query), shared_mutex locking/unlocking, internal state modification (m_Players map update).",
+   "notes": "Callers should ensure the player object is valid before invoking this function. Edge case: If the player's GUID does not exist in m_Players, the SetPosition and SetDailyReportState calls will create a new entry or behave according to the underlying data structure implementation.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Handles the login process for a player by clearing their report status, updating their position in the player database, and setting their daily report state.\",\n  \"overview\": \"This function is invoked when a player successfully logs into the game server. It first clears any existing reports associated with the player's GUID from the CharacterDatabase to ensure a clean state upon re-entry. Subsequently, it acquires a lock on the shared mutex to safely update the player's position coordinates and map ID within the internal m_Players map. Finally, it checks if the player has completed their daily report; if so, it sets their daily report state to true while maintaining the necessary synchronization.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object representing the logged-in user.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database writes (CharacterDatabase.Execute, CharacterDatabase.Query), shared_mutex locking/unlocking, internal state modification (m_Players map update).\",\n  \"notes\": \"Callers should ensure the player object is valid before invoking this function. Edge case: If the player's GUID does not exist in m_Players, the SetPosition and SetDailyReportState calls will create a new entry or behave according to the underlying data structure implementation.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::HandlePlayerLogout@f88f7aac:qwen3-5-4b": {
+  "hash": "7e09bc212c5b",
+  "doc": {
+   "summary": "Removes a player's logout report status and updates the internal player registry upon logout.",
+   "overview": "This function handles the cleanup process when a player logs out by first deleting their record from the players_reports_status table in the CharacterDatabase. It then acquires a lock on the shared mutex to safely erase the player's GUID from the internal m_Players map, ensuring thread-safe removal of the player object.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object that is logging out."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Database write (DELETE), internal state modification (m_Players erase)",
+   "notes": "Caller must ensure the player pointer is valid before invoking. Edge case: If the player was already removed from m_Players or their GUID does not exist in the database, the function performs a no-op.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Removes a player's logout report status and updates the internal player registry upon logout.\",\n  \"overview\": \"This function handles the cleanup process when a player logs out by first deleting their record from the players_reports_status table in the CharacterDatabase. It then acquires a lock on the shared mutex to safely erase the player's GUID from the internal m_Players map, ensuring thread-safe removal of the player object.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object that is logging out.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database write (DELETE), internal state modification (m_Players erase)\",\n  \"notes\": \"Caller must ensure the player pointer is valid before invoking. Edge case: If the player was already removed from m_Players or their GUID does not exist in the database, the function performs a no-op.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AckUpdate@5a8ad41b:qwen3-5-4b": {
+  "hash": "2b249b06a38d",
+  "doc": {
+   "summary": "Updates the anti-cheat check timer for a specific player and triggers actions if the elapsed time exceeds the threshold.",
+   "overview": "This function manages the periodic execution of anti-cheat checks by updating an internal timer based on the provided diff value. If the accumulated time since the last check reaches or exceeds 4000 milliseconds, it executes the necessary actions for the player and resets the timer; otherwise, it simply decrements the remaining time.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose anti-cheat status is being updated."
+    },
+    {
+     "name": "diff",
+     "desc": "The amount of time (in milliseconds) that has elapsed since the last check."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Calls DoActions which may modify global anti-cheat state or trigger network events; updates internal timer.",
+   "notes": "Must be called with a valid player pointer; diff must be non-negative. The function relies on the shared_mutex for thread safety when accessing m_PlayersMutex.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Updates the anti-cheat check timer for a specific player and triggers actions if the elapsed time exceeds the threshold.\",\n  \"overview\": \"This function manages the periodic execution of anti-cheat checks by updating an internal timer based on the provided diff value. If the accumulated time since the last check reaches or exceeds 4000 milliseconds, it executes the necessary actions for the player and resets the timer; otherwise, it simply decrements the remaining time.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose anti-cheat status is being updated.\"\n    },\n    {\n      \"name\": \"diff\",\n      \"desc\": \"The amount of time (in milliseconds) that has elapsed since the last check.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Calls DoActions which may modify global anti-cheat state or trigger network events; updates internal timer.\",\n  \"notes\": \"Must be called with a valid player pointer; diff must be non-negative. The function relies on the shared_mutex for thread safety when accessing m_PlayersMutex.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::DoActions@e49721c7:qwen3-5-4b": {
+  "hash": "dd096f75b180",
+  "doc": {
+   "summary": "Executes anti-cheat logic to detect and report opcode manipulation hacks by analyzing packet acknowledgment delays.",
+   "overview": "This function iterates through a list of pending orders to identify instances where the time between sending an order and receiving its acknowledgment exceeds the allowed threshold. If such a delay is detected, it logs detailed information including player identity, latency, and cheat flag details if configured, and subsequently builds a formal report for the anti-cheat system.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose session data and position are accessed during the check."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "I/O (logging), Network (report building)",
+   "notes": "The function relies on global configuration via sConfigMgr and accesses player-specific session data; it does not take ownership of the player pointer.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Executes anti-cheat logic to detect and report opcode manipulation hacks by analyzing packet acknowledgment delays.\",\n  \"overview\": \"This function iterates through a list of pending orders to identify instances where the time between sending an order and receiving its acknowledgment exceeds the allowed threshold. If such a delay is detected, it logs detailed information including player identity, latency, and cheat flag details if configured, and subsequently builds a formal report for the anti-cheat system.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose session data and position are accessed during the check.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O (logging), Network (report building)\",\n  \"notes\": \"The function relies on global configuration via sConfigMgr and accesses player-specific session data; it does not take ownership of the player pointer.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::OrderSent@a1ecd94b:qwen3-5-4b": {
+  "hash": "bfe20dba923d",
+  "doc": {
+   "summary": "Updates the last sent timestamp and counter for an existing anti-cheat order when a matching opcode is received.",
+   "overview": "This function iterates through the list of active anti-cheat orders to find one that matches either of the two stored opcodes in the incoming packet. Upon finding a match, it records the current server time as the last sent timestamp and increments the usage counter for that specific order.",
+   "params": [
+    {
+     "name": "data",
+     "desc": "Pointer to the WorldPacket containing the received game data."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Modifies internal state of _opackorders; callers should ensure the packet is valid before invoking.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Updates the last sent timestamp and counter for an existing anti-cheat order when a matching opcode is received.\",\n  \"overview\": \"This function iterates through the list of active anti-cheat orders to find one that matches either of the two stored opcodes in the incoming packet. Upon finding a match, it records the current server time as the last sent timestamp and increments the usage counter for that specific order.\",\n  \"params\": [\n    {\n      \"name\": \"data\",\n      \"desc\": \"Pointer to the WorldPacket containing the received game data.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Modifies internal state of _opackorders; callers should ensure the packet is valid before invoking.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::CheckForOrderAck@0c698977:qwen3-5-4b": {
+  "hash": "a69429fb9e2f",
+  "doc": {
+   "summary": "Checks the provided opcode against pending order acknowledgments and decrements the counter for a matching entry.",
+   "overview": "This function iterates through the internal list of pending order acknowledgments to find an entry whose client response matches the given opcode. If a match is found, it decrements the associated counter to track remaining retries or processing steps before breaking out of the loop.",
+   "params": [
+    {
+     "name": "opcode",
+     "desc": "The order acknowledgment code to search for in the pending orders list."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Modifies internal state by decrementing a counter in _opackorders; no I/O or network operations.",
+   "notes": "Callers must ensure the opcode corresponds to a valid order acknowledgment that has been queued. Edge case: if no matching opcode is found, the function performs no action.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Checks the provided opcode against pending order acknowledgments and decrements the counter for a matching entry.\",\n  \"overview\": \"This function iterates through the internal list of pending order acknowledgments to find an entry whose client response matches the given opcode. If a match is found, it decrements the associated counter to track remaining retries or processing steps before breaking out of the loop.\",\n  \"params\": [\n    {\n      \"name\": \"opcode\",\n      \"desc\": \"The order acknowledgment code to search for in the pending orders list.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Modifies internal state by decrementing a counter in _opackorders; no I/O or network operations.\",\n  \"notes\": \"Callers must ensure the opcode corresponds to a valid order acknowledgment that has been queued. Edge case: if no matching opcode is found, the function performs no action.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::SavePlayerData@d22d3e8e:qwen3-5-4b": {
+  "hash": "ae9f6a57367f",
+  "doc": {
+   "summary": "Saves anticheat violation data for a specific player to the database using a shared lock.",
+   "overview": "This function retrieves stored anticheat statistics for a given player by acquiring a shared lock on the players map. It then executes a SQL REPLACE statement via CharacterDatabase to persist various report metrics, including counts for different hack types and timestamps.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose anticheat data is being saved."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Database I/O (writes to players_reports_status table)",
+   "notes": "Returns early if the player's GUID is not found in m_Players; relies on CharacterDatabase execution context.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Saves anticheat violation data for a specific player to the database using a shared lock.\",\n  \"overview\": \"This function retrieves stored anticheat statistics for a given player by acquiring a shared lock on the players map. It then executes a SQL REPLACE statement via CharacterDatabase to persist various report metrics, including counts for different hack types and timestamps.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose anticheat data is being saved.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database I/O (writes to players_reports_status table)\",\n  \"notes\": \"Returns early if the player's GUID is not found in m_Players; relies on CharacterDatabase execution context.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::SavePlayerDataDaily@8f69d25b:qwen3-5-4b": {
+  "hash": "344c81aab9ce",
+  "doc": {
+   "summary": "Saves daily anticheat report statistics for a specific player to the database, updating only if the player exists in the tracking registry.",
+   "overview": "This function retrieves the accumulated anticheat data for a given player from an internal map protected by a shared mutex. It then executes a SQL UPDATE statement via CharacterDatabase to persist the daily metrics, including various hack type counts and timestamps, ensuring that existing records are replaced with the new aggregated values.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object whose anticheat data is being saved."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Database I/O (SQL UPDATE)",
+   "notes": "Returns early if the player's GUID is not found in m_Players; callers should ensure the player has been registered before invoking this function.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Saves daily anticheat report statistics for a specific player to the database, updating only if the player exists in the tracking registry.\",\n  \"overview\": \"This function retrieves the accumulated anticheat data for a given player from an internal map protected by a shared mutex. It then executes a SQL UPDATE statement via CharacterDatabase to persist the daily metrics, including various hack type counts and timestamps, ensuring that existing records are replaced with the new aggregated values.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object whose anticheat data is being saved.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database I/O (SQL UPDATE)\",\n  \"notes\": \"Returns early if the player's GUID is not found in m_Players; callers should ensure the player has been registered before invoking this function.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetTotalReports@196ec63e:qwen3-5-4b": {
+  "hash": "ca4024ba9e81",
+  "doc": {
+   "summary": "Retrieves the total number of reports for a specific player object.",
+   "overview": "This function safely accesses the internal report counter for a given player by acquiring a shared lock on the players mutex. It searches the m_Players map for the provided GUID and returns the accumulated report count stored within that player's data structure, or zero if the player is not found.",
+   "params": [
+    {
+     "name": "guid",
+     "desc": "The unique identifier of the player object to query."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Caller must ensure the GUID corresponds to a valid player in m_Players for non-zero results; returns 0 if the player does not exist.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the total number of reports for a specific player object.\",\n  \"overview\": \"This function safely accesses the internal report counter for a given player by acquiring a shared lock on the players mutex. It searches the m_Players map for the provided GUID and returns the accumulated report count stored within that player's data structure, or zero if the player is not found.\",\n  \"params\": [\n    {\n      \"name\": \"guid\",\n      \"desc\": \"The unique identifier of the player object to query.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Caller must ensure the GUID corresponds to a valid player in m_Players for non-zero results; returns 0 if the player does not exist.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetAverage@95864c13:qwen3-5-4b": {
+  "hash": "4f86b71844ad",
+  "doc": {
+   "summary": "Retrieves the average value associated with a specific player object by safely locking the global players map.",
+   "overview": "This function accesses the internal player data structure to fetch an aggregated metric for a given player GUID. It utilizes a shared lock to ensure thread-safe concurrent reads without blocking other threads performing similar operations. If the player is not found in the registry, it returns zero to indicate missing data.",
+   "params": [
+    {
+     "name": "guid",
+     "desc": "The unique identifier of the player object for which the average value is requested."
+    }
+   ],
+   "returns": "float",
+   "side_effects": "None",
+   "notes": "Caller must ensure the GUID corresponds to a valid registered player; returns 0.0f if not found.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the average value associated with a specific player object by safely locking the global players map.\",\n  \"overview\": \"This function accesses the internal player data structure to fetch an aggregated metric for a given player GUID. It utilizes a shared lock to ensure thread-safe concurrent reads without blocking other threads performing similar operations. If the player is not found in the registry, it returns zero to indicate missing data.\",\n  \"params\": [\n    {\n      \"name\": \"guid\",\n      \"desc\": \"The unique identifier of the player object for which the average value is requested.\"\n    }\n  ],\n  \"returns\": \"float\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Caller must ensure the GUID corresponds to a valid registered player; returns 0.0f if not found.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::GetTypeReports@cbbf13b6:qwen3-5-4b": {
+  "hash": "6040abf7fa0e",
+  "doc": {
+   "summary": "Retrieves the type-specific game report count for a given player object while holding a shared lock.",
+   "overview": "This function safely accesses the internal report counter of a specific player by first verifying their existence in the global player registry. It utilizes a shared mutex to ensure thread-safe concurrent reads without blocking other threads that might be modifying player data. If the player is not found, it returns zero; otherwise, it delegates the actual retrieval logic to the player's own report tracking mechanism.",
+   "params": [
+    {
+     "name": "guid",
+     "desc": "The unique identifier of the player object whose reports are being queried."
+    },
+    {
+     "name": "type",
+     "desc": "The specific category of game report (e.g., cheating, lag) to retrieve the count for."
+    }
+   ],
+   "returns": "uint32",
+   "side_effects": "None",
+   "notes": "Caller must ensure the GUID corresponds to a valid player object; returns 0 if not found. Thread-safe due to shared lock usage.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Retrieves the type-specific game report count for a given player object while holding a shared lock.\",\n  \"overview\": \"This function safely accesses the internal report counter of a specific player by first verifying their existence in the global player registry. It utilizes a shared mutex to ensure thread-safe concurrent reads without blocking other threads that might be modifying player data. If the player is not found, it returns zero; otherwise, it delegates the actual retrieval logic to the player's own report tracking mechanism.\",\n  \"params\": [\n    {\n      \"name\": \"guid\",\n      \"desc\": \"The unique identifier of the player object whose reports are being queried.\"\n    },\n    {\n      \"name\": \"type\",\n      \"desc\": \"The specific category of game report (e.g., cheating, lag) to retrieve the count for.\"\n    }\n  ],\n  \"returns\": \"uint32\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Caller must ensure the GUID corresponds to a valid player object; returns 0 if not found. Thread-safe due to shared lock usage.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::MustCheckTempReports@aaa0e068:qwen3-5-4b": {
+  "hash": "0a3ec388404b",
+  "doc": {
+   "summary": "Returns true if the provided report type is not a specific list of hack-related or control-related exceptions.",
+   "overview": "This function determines whether temporary reports should be checked by returning false for several specific hack types and true for all others. It acts as a filter to exclude certain malicious behaviors from standard reporting checks while allowing other report types to proceed.",
+   "params": [
+    {
+     "name": "type",
+     "desc": "The ReportTypes enum value indicating the kind of report being evaluated."
+    }
+   ],
+   "returns": "bool",
+   "side_effects": "None",
+   "notes": "Callers should ensure the type argument is valid before calling; returns false for JUMP_HACK_REPORT, TELEPORT_HACK_REPORT, IGNORE_CONTROL_REPORT, GRAVITY_HACK_REPORT, ANTIKNOCK_BACK_HACK_REPORT, NO_FALL_DAMAGE_HACK_REPORT, and OP_ACK_HACK_REPORT.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Returns true if the provided report type is not a specific list of hack-related or control-related exceptions.\",\n  \"overview\": \"This function determines whether temporary reports should be checked by returning false for several specific hack types and true for all others. It acts as a filter to exclude certain malicious behaviors from standard reporting checks while allowing other report types to proceed.\",\n  \"params\": [\n    {\n      \"name\": \"type\",\n      \"desc\": \"The ReportTypes enum value indicating the kind of report being evaluated.\"\n    }\n  ],\n  \"returns\": \"bool\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Callers should ensure the type argument is valid before calling; returns false for JUMP_HACK_REPORT, TELEPORT_HACK_REPORT, IGNORE_CONTROL_REPORT, GRAVITY_HACK_REPORT, ANTIKNOCK_BACK_HACK_REPORT, NO_FALL_DAMAGE_HACK_REPORT, and OP_ACK_HACK_REPORT.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::BuildReport@bb1112c3:qwen3-5-4b": {
+  "hash": "4d1cb12219bb",
+  "doc": {
+   "summary": "Records a cheat report for a player, updates their internal statistics and database state, and triggers automatic kick or ban actions if configured thresholds are exceeded.",
+   "overview": "This function aggregates temporary and total reports for a specific player based on the provided report type. It calculates time-based averages and persists cumulative data to the database when daily limits are reached. Finally, it evaluates whether the accumulated report count warrants an automated kick or ban according to server configuration settings.",
+   "params": [
+    {
+     "name": "player",
+     "desc": "Pointer to the Player object being reported."
+    },
+    {
+     "name": "reportType",
+     "desc": "The specific type of cheat behavior detected (e.g., speed hack, fly hack)."
+    },
+    {
+     "name": "optMovementInfo",
+     "desc": "Optional movement data associated with the report."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Database write, network message sending, player kick, player ban",
+   "notes": "Calls BuildAndSendReportToIngameGameMasters; checks for temporary report timers and daily report thresholds; logs events if configured.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Records a cheat report for a player, updates their internal statistics and database state, and triggers automatic kick or ban actions if configured thresholds are exceeded.\",\n  \"overview\": \"This function aggregates temporary and total reports for a specific player based on the provided report type. It calculates time-based averages and persists cumulative data to the database when daily limits are reached. Finally, it evaluates whether the accumulated report count warrants an automated kick or ban according to server configuration settings.\",\n  \"params\": [\n    {\n      \"name\": \"player\",\n      \"desc\": \"Pointer to the Player object being reported.\"\n    },\n    {\n      \"name\": \"reportType\",\n      \"desc\": \"The specific type of cheat behavior detected (e.g., speed hack, fly hack).\"\n    },\n    {\n      \"name\": \"optMovementInfo\",\n      \"desc\": \"Optional movement data associated with the report.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database write, network message sending, player kick, player ban\",\n  \"notes\": \"Calls BuildAndSendReportToIngameGameMasters; checks for temporary report timers and daily report thresholds; logs events if configured.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AnticheatGlobalCommand@09b54286:qwen3-5-4b": {
+  "hash": "d8642c4dc292",
+  "doc": {
+   "summary": "Saves anticheat data for all connected players and displays a leaderboard of the three players with the most reports.",
+   "overview": "This function iterates through every active WorldSession to retrieve player objects, saving their anticheat statistics via sAnticheatMgr. It then queries the database for players with non-zero report counts, ordered by total reports in descending order, limiting the results to the top three. Finally, it sends a formatted system message listing these players and their statistics, or indicates if no data is available.",
+   "params": [
+    {
+     "name": "handler",
+     "desc": "The ChatHandler instance used to send system messages to the client."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Database query and write operations; global state modification via sAnticheatMgr.",
+   "notes": "Depends on sWorldSessionMgr, CharacterDatabase, ObjectAccessor, and sAnticheatMgr being initialized. The function returns early if the database query fails to find any players with reports.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Saves anticheat data for all connected players and displays a leaderboard of the three players with the most reports.\",\n  \"overview\": \"This function iterates through every active WorldSession to retrieve player objects, saving their anticheat statistics via sAnticheatMgr. It then queries the database for players with non-zero report counts, ordered by total reports in descending order, limiting the results to the top three. Finally, it sends a formatted system message listing these players and their statistics, or indicates if no data is available.\",\n  \"params\": [\n    {\n      \"name\": \"handler\",\n      \"desc\": \"The ChatHandler instance used to send system messages to the client.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database query and write operations; global state modification via sAnticheatMgr.\",\n  \"notes\": \"Depends on sWorldSessionMgr, CharacterDatabase, ObjectAccessor, and sAnticheatMgr being initialized. The function returns early if the database query fails to find any players with reports.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AnticheatDeleteCommand@8a7d21f9:qwen3-5-4b": {
+  "hash": "c23b4827bc91",
+  "doc": {
+   "summary": "Resets all anti-cheat reporting statistics for a specific player or globally by clearing internal counters and deleting database records.",
+   "overview": "This function clears anti-cheat data associated with either a specific player GUID or all players depending on whether the input GUID is valid. It updates in-memory structures to zero out total reports, averages, creation times, and per-type report counts while simultaneously executing SQL commands to remove corresponding entries from the database.",
+   "params": [
+    {
+     "name": "guid",
+     "desc": "The unique identifier for the player whose anti-cheat data should be reset; if invalid (0), the function resets data for all players."
+    }
+   ],
+   "returns": "void",
+   "side_effects": "Locks m_PlayersMutex, performs I/O operations via CharacterDatabase.Execute to delete records from players_reports_status table.",
+   "notes": "Callers should ensure thread safety is handled by the mutex lock; edge case occurs when guid is null, triggering a global reset instead of a targeted one.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Resets all anti-cheat reporting statistics for a specific player or globally by clearing internal counters and deleting database records.\",\n  \"overview\": \"This function clears anti-cheat data associated with either a specific player GUID or all players depending on whether the input GUID is valid. It updates in-memory structures to zero out total reports, averages, creation times, and per-type report counts while simultaneously executing SQL commands to remove corresponding entries from the database.\",\n  \"params\": [\n    {\n      \"name\": \"guid\",\n      \"desc\": \"The unique identifier for the player whose anti-cheat data should be reset; if invalid (0), the function resets data for all players.\"\n    }\n  ],\n  \"returns\": \"void\",\n  \"side_effects\": \"Locks m_PlayersMutex, performs I/O operations via CharacterDatabase.Execute to delete records from players_reports_status table.\",\n  \"notes\": \"Callers should ensure thread safety is handled by the mutex lock; edge case occurs when guid is null, triggering a global reset instead of a targeted one.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::AnticheatPurgeCommand@e83a6fb3:qwen3-5-4b": {
+  "hash": "159f7347edae",
+  "doc": {
+   "summary": "Executes a database command to truncate the daily_players_reports table as part of the anticheat purge process.",
+   "overview": "This function is invoked by the AnticheatMgr module to clear historical player report data, ensuring that old logs do not consume excessive storage or impact query performance. It delegates the actual truncation operation to the CharacterDatabase class using a raw SQL TRUNCATE statement targeting the daily_players_reports table.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Database I/O (modifies global state by altering the database schema/content)",
+   "notes": "Callers should ensure this is used only during scheduled maintenance or specific purge events; edge cases include potential failure if the table does not exist, which would result in a silent error within the Execute call.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Executes a database command to truncate the daily_players_reports table as part of the anticheat purge process.\",\n  \"overview\": \"This function is invoked by the AnticheatMgr module to clear historical player report data, ensuring that old logs do not consume excessive storage or impact query performance. It delegates the actual truncation operation to the CharacterDatabase class using a raw SQL TRUNCATE statement targeting the daily_players_reports table.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Database I/O (modifies global state by altering the database schema/content)\",\n  \"notes\": \"Callers should ensure this is used only during scheduled maintenance or specific purge events; edge cases include potential failure if the table does not exist, which would result in a silent error within the Execute call.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.cpp::ResetDailyReportStates@e51353b7:qwen3-5-4b": {
+  "hash": "dc8b4eda5d97",
+  "doc": {
+   "summary": "Resets the daily report state for all tracked players to false while holding a shared mutex lock.",
+   "overview": "This function iterates through the internal map of player data and sets the daily report flag to false for every entry. It acquires a unique lock on the shared mutex before beginning its operation to ensure thread safety during the update process.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Modifies global state by updating player records; uses I/O via std::unique_lock for synchronization.",
+   "notes": "Callers should expect this function to be idempotent regarding the lock acquisition, though it will always reset all players regardless of their current state.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Resets the daily report state for all tracked players to false while holding a shared mutex lock.\",\n  \"overview\": \"This function iterates through the internal map of player data and sets the daily report flag to false for every entry. It acquires a unique lock on the shared mutex before beginning its operation to ensure thread safety during the update process.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Modifies global state by updating player records; uses I/O via std::unique_lock for synchronization.\",\n  \"notes\": \"Callers should expect this function to be idempotent regarding the lock acquisition, though it will always reset all players regardless of their current state.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.h::ServerOrderData@e61e2cab:qwen3-5-4b": {
+  "hash": "4fbf95a4d365",
+  "doc": {
+   "summary": "A lightweight struct holding opcode and response data for anti-cheat server communication.",
+   "overview": "ServerOrderData is a simple data container used within the AnticheatMgr module to track specific server opcodes and their corresponding client responses. It initializes internal counters and timestamps upon construction, providing a mechanism to correlate incoming requests with outgoing replies during gameplay monitoring. This structure facilitates efficient serialization and transmission of anti-cheat logic states between network components.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "Used by the AnticheatMgr for tracking opcode sequences; ensure clientResp matches the expected response format.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"A lightweight struct holding opcode and response data for anti-cheat server communication.\",\n  \"overview\": \"ServerOrderData is a simple data container used within the AnticheatMgr module to track specific server opcodes and their corresponding client responses. It initializes internal counters and timestamps upon construction, providing a mechanism to correlate incoming requests with outgoing replies during gameplay monitoring. This structure facilitates efficient serialization and transmission of anti-cheat logic states between network components.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"Used by the AnticheatMgr for tracking opcode sequences; ensure clientResp matches the expected response format.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatMgr.h::AnticheatMgr@1332378d:qwen3-5-4b": {
+  "hash": "bd65e7dc1cc7",
+  "doc": {
+   "summary": "Manages anti-cheat detection logic, player reporting, and game master notifications for the server.",
+   "overview": "The AnticheatMgr class serves as the central hub for detecting and handling player exploits such as speed hacks, teleportation, and movement anomalies. It utilizes a singleton pattern to ensure consistent state management across the server while providing methods to build reports, trigger alerts, and notify game masters via chat or in-game messages.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Network (chat messages, packet handling), Global State (player data storage, report counters)",
+   "notes": "Callers should use the static instance() method to access functionality. Edge cases include handling concurrent login/logout events and managing daily report state resets.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Manages anti-cheat detection logic, player reporting, and game master notifications for the server.\",\n  \"overview\": \"The AnticheatMgr class serves as the central hub for detecting and handling player exploits such as speed hacks, teleportation, and movement anomalies. It utilizes a singleton pattern to ensure consistent state management across the server while providing methods to build reports, trigger alerts, and notify game masters via chat or in-game messages.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (chat messages, packet handling), Global State (player data storage, report counters)\",\n  \"notes\": \"Callers should use the static instance() method to access functionality. Edge cases include handling concurrent login/logout events and managing daily report state resets.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatScripts.cpp::AnticheatPlayerScript@71cdbd28:qwen3-5-4b": {
+  "hash": "6ea2c2a3cf88",
+  "doc": {
+   "summary": "A C++ class that implements anticheat hooks for player login, logout, and update events.",
+   "overview": "The AnticheatPlayerScript class extends PlayerScript to manage specific anticheat logic triggered by player lifecycle events. It overrides standard hooks to handle player logout via the anticheat manager, display a system message upon login if configured, and process update diffs for potential order hack detection when enabled.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Network (ChatHandler PSendSysMessage), Global State (sAnticheatMgr, sConfigMgr)",
+   "notes": "Calls sAnticheatMgr and sConfigMgr; relies on PLAYERHOOK_* constants defined in PlayerScript.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"A C++ class that implements anticheat hooks for player login, logout, and update events.\",\n  \"overview\": \"The AnticheatPlayerScript class extends PlayerScript to manage specific anticheat logic triggered by player lifecycle events. It overrides standard hooks to handle player logout via the anticheat manager, display a system message upon login if configured, and process update diffs for potential order hack detection when enabled.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (ChatHandler PSendSysMessage), Global State (sAnticheatMgr, sConfigMgr)\",\n  \"notes\": \"Calls sAnticheatMgr and sConfigMgr; relies on PLAYERHOOK_* constants defined in PlayerScript.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatScripts.cpp::AnticheatWorldScript@3dab9e21:qwen3-5-4b": {
+  "hash": "c4836b4fcf48",
+  "doc": {
+   "summary": "AnticheatWorldScript is a C++ class that extends WorldScript to handle daily report state resets and player data saving for the Anticheat module.",
+   "overview": "This script initializes with hooks on world update and after configuration load, ensuring it runs at the correct lifecycle points. During the update cycle, it checks if the game time has reached a new day to reset daily reports and calculates the next reset time. Additionally, it monitors uptime to trigger periodic saving of player data based on a configurable interval.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "I/O (logging), Network (via sAnticheatMgr->SavePlayerData), Global State (modifies resetTime and lastIterationPlayer)",
+   "notes": "Callers should ensure the Anticheat module is fully initialized before relying on state modifications. Edge cases include scenarios where no players are present, which may result in empty save operations.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"AnticheatWorldScript is a C++ class that extends WorldScript to handle daily report state resets and player data saving for the Anticheat module.\",\n  \"overview\": \"This script initializes with hooks on world update and after configuration load, ensuring it runs at the correct lifecycle points. During the update cycle, it checks if the game time has reached a new day to reset daily reports and calculates the next reset time. Additionally, it monitors uptime to trigger periodic saving of player data based on a configurable interval.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O (logging), Network (via sAnticheatMgr->SavePlayerData), Global State (modifies resetTime and lastIterationPlayer)\",\n  \"notes\": \"Callers should ensure the Anticheat module is fully initialized before relying on state modifications. Edge cases include scenarios where no players are present, which may result in empty save operations.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatScripts.cpp::AnticheatMovementHandlerScript@9fbc3c74:qwen3-5-4b": {
+  "hash": "c5343fd2aed9",
+  "doc": {
+   "summary": "A C++ class that initiates anti-cheat hack detection when a player moves.",
+   "overview": "The AnticheatMovementHandlerScript class extends the base MovementHandlerScript to handle movement events specifically for anti-cheat purposes. Upon receiving a player move event, it checks if the player is a GM account and whether anti-cheat is enabled for such accounts before triggering hack detection logic.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Network (potential data transmission to server), Global state (modification of sAnticheatMgr)",
+   "notes": "Callers should ensure the player object is valid and the movement info contains accurate coordinates. Edge case: GM accounts with anti-cheat disabled will bypass detection.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"A C++ class that initiates anti-cheat hack detection when a player moves.\",\n  \"overview\": \"The AnticheatMovementHandlerScript class extends the base MovementHandlerScript to handle movement events specifically for anti-cheat purposes. Upon receiving a player move event, it checks if the player is a GM account and whether anti-cheat is enabled for such accounts before triggering hack detection logic.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (potential data transmission to server), Global state (modification of sAnticheatMgr)\",\n  \"notes\": \"Callers should ensure the player object is valid and the movement info contains accurate coordinates. Edge case: GM accounts with anti-cheat disabled will bypass detection.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/AnticheatScripts.cpp::startAnticheatScripts@c0290257:qwen3-5-4b": {
+  "hash": "ceb9a5cc4b0e",
+  "doc": {
+   "summary": "Initializes the core anticheat script instances required for runtime monitoring.",
+   "overview": "This function serves as the entry point to activate the server-side anticheat system by instantiating three critical script classes. It creates an AnticheatWorldScript to handle global environment checks, an AnticheatPlayerScript for individual player validation, and an AnticheatMovementHandlerScript to monitor locomotion patterns.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Global state (script instances created)",
+   "notes": "Must be called before any anticheat checks are performed; failure to initialize may result in runtime errors if scripts are accessed prematurely.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Initializes the core anticheat script instances required for runtime monitoring.\",\n  \"overview\": \"This function serves as the entry point to activate the server-side anticheat system by instantiating three critical script classes. It creates an AnticheatWorldScript to handle global environment checks, an AnticheatPlayerScript for individual player validation, and an AnticheatMovementHandlerScript to monitor locomotion patterns.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Global state (script instances created)\",\n  \"notes\": \"Must be called before any anticheat checks are performed; failure to initialize may result in runtime errors if scripts are accessed prematurely.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/PassiveAnticheat.cpp::Addmod_anticheatScripts@d5b5aea2:qwen3-5-4b": {
+  "hash": "1e9db16967e0",
+  "doc": {
+   "summary": "Registers the anticheat command script and initializes the passive anticheat system.",
+   "overview": "This function serves as the primary entry point for enabling the passive anticheat module within the game server. It performs two critical initialization steps: starting the background anticheat scripts and registering a specific command handler for anticheat-related operations. By calling these internal functions, it ensures that all necessary components are ready to monitor and enforce security policies.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Network (potential script execution), Global state (module initialization)",
+   "notes": "Must be called before any anticheat checks are performed; failure to initialize may result in security gaps.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Registers the anticheat command script and initializes the passive anticheat system.\",\n  \"overview\": \"This function serves as the primary entry point for enabling the passive anticheat module within the game server. It performs two critical initialization steps: starting the background anticheat scripts and registering a specific command handler for anticheat-related operations. By calling these internal functions, it ensures that all necessary components are ready to monitor and enforce security policies.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (potential script execution), Global state (module initialization)\",\n  \"notes\": \"Must be called before any anticheat checks are performed; failure to initialize may result in security gaps.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/cs_anticheat.cpp::anticheat_commandscript@fb2918b0:qwen3-5-4b": {
+  "hash": "57e84fe513f2",
+  "doc": {
+   "summary": "The anticheat_commandscript class defines a set of console commands for managing anti-cheat warnings, jailing, and player reports in the game server.",
+   "overview": "This class extends CommandScript to provide specialized administrative tools for detecting and penalizing cheating. It includes static handler functions that check global configuration flags before executing actions such as issuing warnings, teleporting players to a jail location with shackles, or removing penalties via parole. The system relies on shared state through sConfigMgr and sAnticheatMgr to enforce rules consistently across the server.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "Network (chat messages), I/O (player teleportation, aura application/removal), global state (configuration checks, anticheat manager updates)",
+   "notes": "Callers must ensure Anticheat.Enabled is true before invoking jail or parole commands. Edge cases include disconnected players (handled via TrySolvePlayer) and team-specific parole locations. The class uses static methods for command handling, requiring ChatHandler* context.",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"The anticheat_commandscript class defines a set of console commands for managing anti-cheat warnings, jailing, and player reports in the game server.\",\n  \"overview\": \"This class extends CommandScript to provide specialized administrative tools for detecting and penalizing cheating. It includes static handler functions that check global configuration flags before executing actions such as issuing warnings, teleporting players to a jail location with shackles, or removing penalties via parole. The system relies on shared state through sConfigMgr and sAnticheatMgr to enforce rules consistently across the server.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (chat messages), I/O (player teleportation, aura application/removal), global state (configuration checks, anticheat manager updates)\",\n  \"notes\": \"Callers must ensure Anticheat.Enabled is true before invoking jail or parole commands. Edge cases include disconnected players (handled via TrySolvePlayer) and team-specific parole locations. The class uses static methods for command handling, requiring ChatHandler* context.\"\n}",
+  "model": "qwen3.5:4b"
+ },
+ "src/cs_anticheat.cpp::AddSC_anticheat_commandscript@635bae25:qwen3-5-4b": {
+  "hash": "ffdef1b2a63f",
+  "doc": {
+   "summary": "Registers the AnticheatCommandScript command script with the server.",
+   "overview": "This function initializes the anticheat command script by creating a new instance of the AnticheatCommandScript class. It is typically called during server startup to ensure the command system is ready for use. The registration process sets up the necessary internal state and hooks required for the script to operate within the game environment.",
+   "params": [],
+   "returns": "void",
+   "side_effects": "None",
+   "notes": "",
+   "ai": true
+  },
+  "raw": "{\n  \"summary\": \"Registers the AnticheatCommandScript command script with the server.\",\n  \"overview\": \"This function initializes the anticheat command script by creating a new instance of the AnticheatCommandScript class. It is typically called during server startup to ensure the command system is ready for use. The registration process sets up the necessary internal state and hooks required for the script to operate within the game environment.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"None\",\n  \"notes\": \"\"\n}",
+  "model": "qwen3.5:4b"
+ }
+}
