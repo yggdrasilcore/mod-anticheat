@@ -5,6 +5,10 @@ on:
   pull_request:
       branches: [ master ]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   check-codestyle:
     strategy:
@@ -13,7 +17,28 @@ jobs:
     runs-on: ubuntu-latest
     name: Check Codestyling
     steps:
+      - name: Detect source changes
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          files=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" --paginate --jq '.[].filename')
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            files=$(gh api "repos/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}" --jq '.files[].filename' || true)
+          fi
+          if [ -z "$files" ] || printf '%s\n' "$files" | grep -qiE '\.(c|cc|cpp|cxx|h|hh|hpp)$'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "No source changes; skipping codestyle."
+          fi
+
       - uses: actions/checkout@v2
+        if: steps.changes.outputs.code == 'true'
 
       - name: Check Codestyling
+        if: steps.changes.outputs.code == 'true'
         run: source ./apps/ci/ci-codestyle.sh
