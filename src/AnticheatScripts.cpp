@@ -72,7 +72,7 @@ public:
             LOG_INFO("module", "Anticheat: Resetting daily report states.");
             sAnticheatMgr->ResetDailyReportStates();
             UpdateReportResetTime();
-            LOG_INFO("module", "Anticheat: Next daily report reset: {}", Acore::Time::TimeToHumanReadable(resetTime));
+            LOG_INFO("module", "Anticheat: Next daily report reset: {}", Ycore::Time::TimeToHumanReadable(resetTime));
         }
 
         if (GameTime::GetUptime() > lastIterationPlayer)
@@ -95,7 +95,7 @@ public:
 
     void UpdateReportResetTime()
     {
-        resetTime = Seconds(Acore::Time::GetNextTimeWithDayAndHour(-1, 6));
+        resetTime = Seconds(Ycore::Time::GetNextTimeWithDayAndHour(-1, 6));
     }
 };
 
