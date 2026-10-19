@@ -1,7 +1,7 @@
 /*
  *MIT License
  *
- *Copyright (c) 2023 Azerothcore
+ *Copyright (c) 2023 Yggdrasilcore
  *
  *Permission is hereby granted, free of charge, to any person obtaining a copy
  *of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@
 #include "SpellAuras.h"
 #include "DatabaseEnv.h"
 
-#if AC_COMPILER == AC_COMPILER_GNU
+#if YC_COMPILER == YC_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-using namespace Acore::ChatCommands;
+using namespace Ycore::ChatCommands;
 
 enum Spells
 {
@@ -243,7 +243,7 @@ public:
                 do
                 {
                     Field* fields = resultADB->Fetch();
-                    std::string startbanEnd = Acore::Time::TimeToTimestampStr(Seconds(fields[0].Get<uint64>()));
+                    std::string startbanEnd = Ycore::Time::TimeToTimestampStr(Seconds(fields[0].Get<uint64>()));
                     std::string bannedReason = fields[1].Get<std::string>();
                     std::string bannedBy = fields[2].Get<std::string>();
                     handler->PSendSysMessage(lineTemplate_s, "Account Previously Banned", "Yes");
@@ -263,7 +263,7 @@ public:
                 do
                 {
                     Field* fields = resultCDB->Fetch();
-                    std::string startbanEnd = Acore::Time::TimeToTimestampStr(Seconds(fields[0].Get<uint64>()));
+                    std::string startbanEnd = Ycore::Time::TimeToTimestampStr(Seconds(fields[0].Get<uint64>()));
                     std::string bannedReason = fields[1].Get<std::string>();
                     std::string bannedBy = fields[2].Get<std::string>();
                     handler->PSendSysMessage(lineTemplate_s, "Character Previously Banned", "Yes");
