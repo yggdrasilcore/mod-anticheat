@@ -1473,17 +1473,17 @@
   "model": "qwen3.5:4b"
  },
  "src/AnticheatScripts.cpp::AnticheatWorldScript@3dab9e21:qwen3-5-4b": {
-  "hash": "c4836b4fcf48",
+  "hash": "84ea18ccad62",
   "doc": {
-   "summary": "AnticheatWorldScript is a C++ class that manages daily report state resets and player data persistence within the Anticheat module.",
-   "overview": "This script extends WorldScript to handle specific lifecycle hooks for the Anticheat system, specifically triggering on world update and after configuration load. Its primary function involves resetting daily report states at a scheduled time and saving player data based on uptime thresholds relative to a configurable save interval.",
+   "summary": "Manages daily report state resets and player data persistence for the Anticheat module.",
+   "overview": "This class extends WorldScript to handle specific lifecycle hooks for the Anticheat system, specifically resetting daily report states at midnight and saving player data based on uptime thresholds. It initializes with hooks for world update and post-configuration load events, ensuring reports are processed regularly without requiring external triggers.",
    "params": [],
    "returns": "void",
-   "side_effects": "I/O (logging), Network (via sAnticheatMgr and sWorldSessionMgr)",
-   "notes": "Callers should ensure the Anticheat module is fully initialized before relying on state resets; edge cases include scenarios where no players are present, which results in skipped save operations.",
+   "side_effects": "I/O (file writes), Network (potential state updates via sAnticheatMgr), Global State (modifies resetTime and lastIterationPlayer)",
+   "notes": "Callsers should expect this to run on every world update cycle; edge cases include scenarios where no players are present, in which case the save loop is skipped.",
    "ai": true
   },
-  "raw": "{\n  \"summary\": \"AnticheatWorldScript is a C++ class that manages daily report state resets and player data persistence within the Anticheat module.\",\n  \"overview\": \"This script extends WorldScript to handle specific lifecycle hooks for the Anticheat system, specifically triggering on world update and after configuration load. Its primary function involves resetting daily report states at a scheduled time and saving player data based on uptime thresholds relative to a configurable save interval.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O (logging), Network (via sAnticheatMgr and sWorldSessionMgr)\",\n  \"notes\": \"Callers should ensure the Anticheat module is fully initialized before relying on state resets; edge cases include scenarios where no players are present, which results in skipped save operations.\"\n}",
+  "raw": "{\n  \"summary\": \"Manages daily report state resets and player data persistence for the Anticheat module.\",\n  \"overview\": \"This class extends WorldScript to handle specific lifecycle hooks for the Anticheat system, specifically resetting daily report states at midnight and saving player data based on uptime thresholds. It initializes with hooks for world update and post-configuration load events, ensuring reports are processed regularly without requiring external triggers.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"I/O (file writes), Network (potential state updates via sAnticheatMgr), Global State (modifies resetTime and lastIterationPlayer)\",\n  \"notes\": \"Callsers should expect this to run on every world update cycle; edge cases include scenarios where no players are present, in which case the save loop is skipped.\"\n}",
   "model": "qwen3.5:4b"
  },
  "src/AnticheatScripts.cpp::AnticheatMovementHandlerScript@9fbc3c74:qwen3-5-4b": {
@@ -1529,17 +1529,17 @@
   "model": "qwen3.5:4b"
  },
  "src/cs_anticheat.cpp::anticheat_commandscript@fb2918b0:qwen3-5-4b": {
-  "hash": "57e84fe513f2",
+  "hash": "7f8db39d75c1",
   "doc": {
-   "summary": "The anticheat_commandscript class defines a set of console commands for managing anti-cheat warnings, jailing, and deletion within the game server.",
-   "overview": "This class extends CommandScript to provide specialized administrative tools for enforcing anti-cheat measures. It includes static handler functions that process commands like 'warn', 'jail', 'parole', and 'delete' by validating player status, checking configuration flags, and executing targeted actions such as teleportation, aura application, or homebind setting.",
+   "summary": "The anticheat_commandscript class defines a set of console commands for managing anti-cheat warnings, jails, and player reports within the game server.",
+   "overview": "This class extends CommandScript to provide specialized administrative tools for detecting and penalizing cheating. It includes static handler functions that process commands like 'warn', 'jail', 'parole', and 'delete' by interacting with player sessions, applying status effects such as shackles or silence, and modifying homebound locations based on team affiliation.",
    "params": [],
    "returns": "void",
-   "side_effects": "Network (player teleports), I/O (system messages sent), global state (config checks, anticheat manager updates)",
-   "notes": "Callers must ensure the 'Anticheat.Enabled' configuration option is active before invoking these commands. Edge cases include disconnected players or invalid targets which result in error messages and command failure.",
+   "side_effects": "Network (player teleportation), I/O (system messages), Global state (configuration checks, aura application/removal)",
+   "notes": "Callers must ensure the anticheat system is enabled via configuration before invoking these commands. Edge cases include handling disconnected players and team-specific parole locations.",
    "ai": true
   },
-  "raw": "{\n  \"summary\": \"The anticheat_commandscript class defines a set of console commands for managing anti-cheat warnings, jailing, and deletion within the game server.\",\n  \"overview\": \"This class extends CommandScript to provide specialized administrative tools for enforcing anti-cheat measures. It includes static handler functions that process commands like 'warn', 'jail', 'parole', and 'delete' by validating player status, checking configuration flags, and executing targeted actions such as teleportation, aura application, or homebind setting.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (player teleports), I/O (system messages sent), global state (config checks, anticheat manager updates)\",\n  \"notes\": \"Callers must ensure the 'Anticheat.Enabled' configuration option is active before invoking these commands. Edge cases include disconnected players or invalid targets which result in error messages and command failure.\"\n}",
+  "raw": "{\n  \"summary\": \"The anticheat_commandscript class defines a set of console commands for managing anti-cheat warnings, jails, and player reports within the game server.\",\n  \"overview\": \"This class extends CommandScript to provide specialized administrative tools for detecting and penalizing cheating. It includes static handler functions that process commands like 'warn', 'jail', 'parole', and 'delete' by interacting with player sessions, applying status effects such as shackles or silence, and modifying homebound locations based on team affiliation.\",\n  \"params\": [],\n  \"returns\": \"void\",\n  \"side_effects\": \"Network (player teleportation), I/O (system messages), Global state (configuration checks, aura application/removal)\",\n  \"notes\": \"Callers must ensure the anticheat system is enabled via configuration before invoking these commands. Edge cases include handling disconnected players and team-specific parole locations.\"\n}",
   "model": "qwen3.5:4b"
  },
  "src/cs_anticheat.cpp::AddSC_anticheat_commandscript@635bae25:qwen3-5-4b": {
